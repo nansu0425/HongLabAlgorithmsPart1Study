@@ -11,16 +11,38 @@ string Subtract(string str1, string str2)
 	if (str1 == str2)
 		return "0"; // '0'은 char, "0"은 string
 
-	int N = max(str1.size(), str2.size());
-	str1 = string(N - str1.size(), '0') + str1; // 문자열끼리의 더하기도 가능
-	str2 = string(N - str2.size(), '0') + str2;
+	const int strSize = max(static_cast<int>(str1.size()), static_cast<int>(str2.size()));
+	str1 = string(strSize - str1.size(), '0') + str1; // 문자열끼리의 더하기도 가능
+	str2 = string(strSize - str2.size(), '0') + str2;
 
-	string result(N, '0');
+	string result(strSize, '0');
 
-	// TODO: 더하기와 거의 비슷합니다.
+	int carry = 0;
 
-	// 불필요한 '0' 제거 (예: "078" -> "78")
-	// TODO:
+	// 모든 자릿수 빼기 진행
+	for (int strIdx = strSize - 1; strIdx >= 0; --strIdx)
+	{
+		int str1Num = str1[strIdx] - '0';
+		int str2Num = str2[strIdx] - '0';
+
+		// 미리 10을 빌려온다
+		int sum = str1Num - str2Num + carry + 10; 
+
+		// sum에 10을 더하지 않았을 때 음수면 캐리 값 -1 설정
+		carry = sum / 10 - 1;
+
+		result[strIdx] = sum % 10 + '0';
+	}
+
+	// result 앞의 0 문자들을 제거
+	int validIdx = 0;
+
+	while (result[validIdx] == '0')
+	{
+		++validIdx;
+	}
+
+	result = result.substr(validIdx, strSize - validIdx);
 
 	return result;
 }
