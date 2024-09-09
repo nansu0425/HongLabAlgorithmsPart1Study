@@ -9,7 +9,11 @@ int main()
 		int decimal = 105;
 		string binary;
 
-		//TODO:
+		while (decimal > 0)
+		{
+			binary = string(1, decimal % 2 + '0') + binary;
+			decimal >>= 1;
+		}
 
 		cout << binary << endl; // 1101001
 	}
@@ -18,7 +22,18 @@ int main()
 	{
 		string input = "Hello, World!";
 
-		// TODO:
+		int leftIdx = 0;
+		int rightIdx = input.size() - 1;
+
+		while (leftIdx < rightIdx)
+		{
+			char tmp = input[leftIdx];
+			input[leftIdx] = input[rightIdx];
+			input[rightIdx] = tmp;
+
+			++leftIdx;
+			--rightIdx;
+		}
 
 		cout << input << endl; // !dlroW ,olleH
 	}
@@ -27,7 +42,18 @@ int main()
 	{
 		string n = "789789";
 
-		// TODO:
+		while (n.size() > 1)
+		{
+			int sum = 0;
+
+			while (n.size() > 0)
+			{
+				sum += n[0] - '0';
+				n = n.substr(1, n.size() - 1);
+			}
+
+			n = to_string(sum);
+		}
 
 		cout << n << endl;
 	}
