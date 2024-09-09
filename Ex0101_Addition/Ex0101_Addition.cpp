@@ -4,11 +4,60 @@
 
 using namespace std;
 
-string Add(string str1, string str2)
+string Add(string lhs, string rhs)
 {
-	// TODO:
+	string result;
+	
+	int lhsIdx = static_cast<int>(lhs.size()) - 1;
+	int rhsIdx = static_cast<int>(rhs.size()) - 1;
+	int carry = 0;
 
-	return string("0");
+	// 인덱스가 모두 0이상일 때 반복
+	while ((lhsIdx >= 0) && (rhsIdx >= 0))
+	{
+		int sum = lhs[lhsIdx] + rhs[rhsIdx] - 2 * '0' + carry;
+
+		carry = sum / 10;
+		result = string(1, sum % 10 + '0') + result;
+
+		--lhsIdx;
+		--rhsIdx;
+	}
+
+	int resultIdx = -1;
+
+	// 더하지 않고 남은 문자열을 더한다
+	if (lhsIdx >= 0)
+	{
+		result = lhs.substr(0, lhsIdx + 1) + result;
+		resultIdx = lhsIdx;
+	}
+	else if (rhsIdx >= 0)
+	{
+		result = rhs.substr(0, rhsIdx + 1) + result;
+		resultIdx = rhsIdx;
+	}
+
+	// 캐리 처리
+	if (carry == 1)
+	{
+		while ((resultIdx >= 0) && (result[resultIdx] == '9'))
+		{
+			result[resultIdx] = '0';
+			--resultIdx;
+		}
+
+		if (resultIdx == -1)
+		{
+			result = string(1, '1') + result;
+		}
+		else
+		{
+			result[resultIdx] = result[resultIdx] + 1;
+		}
+	}
+
+	return result;
 }
 
 int main()
