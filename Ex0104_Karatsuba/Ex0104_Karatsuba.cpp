@@ -4,6 +4,7 @@
 #include <assert.h>
 
 using namespace std;
+int g_mulCount = 0;
 
 string Add(string str1, string str2)
 {
@@ -70,6 +71,7 @@ string KaratsubaHelper(string str1, string str2, int level) // level은 디버�
 	if (N == 1)
 	{
 		string result = to_string(stoi(str1) * stoi(str2));
+		++g_mulCount;
 		return result;
 	}
 
@@ -82,13 +84,18 @@ string KaratsubaHelper(string str1, string str2, int level) // level은 디버�
 	string d = str2.substr(mid, N - mid);
 
 	string ac = KaratsubaHelper(a, c, level + 1);
-	// TODO:
+	string bd = KaratsubaHelper(b, d, level + 1);
+
+	string aPlusB = Add(a, b);
+	string cPlusD = Add(c, d);
+
+	string adPlusBc = Subtract(KaratsubaHelper(aPlusB, cPlusD, level + 1), Add(ac, bd));
 
 	// 문자열 뒤에 '0'을 추가해서 10^N를 O(N)으로 처리
 	ac.append(string((N - mid) * 2, '0'));
-	// TODO: ...
+	adPlusBc.append(string(N - mid, '0'));
 
-	// string result = TODO;
+	string result = Add(Add(ac, adPlusBc), bd);
 
 	// 디버깅 참고 (저는 하나하나 다 출력해보면서 디버깅합니다.)
 	//int ai = stoi(a);
@@ -103,7 +110,7 @@ string KaratsubaHelper(string str1, string str2, int level) // level은 디버�
 	// 주의: int 범위를 넘어가는 큰 숫자에 대해서는 사용할 수 없음
 	// assert(stoi(result) == stoi(str1) * stoi(str2));
 
-	return string("0"); // return result;
+	return result; // return result;
 }
 
 string Karatsuba(string str1, string str2)
@@ -131,7 +138,7 @@ int main()
 		, {"5555", "55", std::to_string(5555 * 55)}
 		, {"5555", "5555", std::to_string(5555 * 5555)}
 		, {"98234712354214154", "171454654654655", "16842798681791158832220782986870"}
-		// , {"9823471235421415454545454545454544", "1714546546546545454544548544544545", "16842798681791114273590624445460185389471221520083884298838480662480"}
+		, {"9823471235421415454545454545454544", "1714546546546545454544548544544545", "16842798681791114273590624445460185389471221520083884298838480662480"}
 	};
 
 	for (const auto& t : tests)
@@ -142,8 +149,10 @@ int main()
 
 		cout << str1 << " * " << str2 << " = " << expected << endl;
 
+		g_mulCount = 0;
 		const string result = Karatsuba(str1, str2);
 
+		cout << "Mul count: " << g_mulCount << std::endl;
 		cout << result << " " << expected << " ";
 
 		if (result == expected)
