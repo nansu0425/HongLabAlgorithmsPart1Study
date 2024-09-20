@@ -84,23 +84,27 @@ Pair Select(vector<int>& arr, int lo, int hi, int k)
 		k -= 1;
 	}
 
-	int g = (hi - lo + 1) / 5; // 그룹의 개수
+	int numGroups = (hi - lo + 1) / 5; // 그룹의 개수
 
 	// 그룹단위 정렬 전 출력
-	PrintGroups(arr, lo, g);
+	PrintGroups(arr, lo, numGroups);
 
 	//TODO: 각각의 그룹 정렬(힌트: stride 사용)
+	for (int arrIdx = lo; arrIdx < hi; ++arrIdx)
+	{
+		SelectionSortPass(arr, arrIdx, hi, numGroups);
+	}
 
 	// 그룹단위 정렬 후 출력
-	PrintGroups(arr, lo, g);
+	PrintGroups(arr, lo, numGroups);
 
 	// 가운데 몰려있는 그룹별 중간값들에 대해 재귀 호출
-	// Pair x = TODO
+	Pair median = Select(arr, lo + 2 * numGroups, lo + 3 * numGroups - 1, std::ceil(numGroups / 2.0));
 
-	// cout << "lo = " << lo << ", hi = " << hi << ", Median of medians = " << x.value << endl;
+	std::cout << "lo = " << lo << ", hi = " << hi << ", Median of medians = " << median.value << endl;
 
 	// 중간값들의 중간값을 피벗으로 사용
-	// swap(arr[x.index], arr[hi]);
+	std::swap(arr[median.index], arr[hi]);
 
 	int index = Partition(arr, lo, hi);
 
