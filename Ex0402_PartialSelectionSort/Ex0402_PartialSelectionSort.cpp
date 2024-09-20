@@ -25,7 +25,17 @@ void PartialSelectionSort(vector<int>& arr, int k)
 
 	for (int i = 0; i < k; i++)
 	{
-		// SelectionSortPass( TODO: );
+		int minIdx = i;
+
+		for (int arrIdx = minIdx + 1; arrIdx < arr.size(); ++arrIdx)
+		{
+			if (arr[arrIdx] < arr[minIdx])
+			{
+				minIdx = arrIdx;
+			}
+		}
+
+		std::swap(arr[i], arr[minIdx]);
 
 		Print(arr);
 	}
