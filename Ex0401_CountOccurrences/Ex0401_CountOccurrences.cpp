@@ -103,7 +103,7 @@ int Count3(const vector<int>& arr, int x)
 
 	int lowestIdx = 0;
 	int lowLeftIdx = leftIdx;
-	int lowRightIdx = rightIdx;
+	int lowRightIdx = midIdx;
 
 	while (lowLeftIdx <= lowRightIdx)
 	{
@@ -129,7 +129,7 @@ int Count3(const vector<int>& arr, int x)
 	}
 
 	int highestIdx = 0;
-	int highLeftIdx = leftIdx;
+	int highLeftIdx = midIdx;
 	int highRightIdx = rightIdx;
 
 	while (highLeftIdx <= highRightIdx)
