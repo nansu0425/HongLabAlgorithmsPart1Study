@@ -36,7 +36,7 @@ void Print(vector<int>& arr, int lo, int hi, string sep = "")
 // CLRS p. 184
 int Partition(vector<int>& arr, int lo, int hi)
 {
-	int x = arr[hi]; // 마지막 값을 피벗으로 사용
+	int x = arr[hi]; // hi 인덱스 원소를 pivot으로 선택
 	int i = lo - 1;
 	for (int j = lo; j < hi; j++)
 	{
@@ -68,30 +68,37 @@ int RandomizedSelect(vector<int>& arr, int lo, int hi, int k)
 	Print(arr, lo, hi);
 
 	if (lo == hi) return arr[lo]; // 하나만 남았을 경우
-
+	
 	// 난수사용하는 경우와 아닌 경우 비교해보세요.
-	//int random = lo + rand() % (hi - lo + 1);
+	int random = lo + rand() % (hi - lo + 1);
 	//참고: uniform_int_distribution<int> vd(lo, hi)도 사용 가능
-	//swap(arr[random], arr[hi]);
+	swap(arr[random], arr[hi]);
 
 	int index = Partition(arr, lo, hi); // pivot index
 
-	//if (index - lo == k - 1) TODO;
-	//else if (k - 1 < index - lo) TODO;
-	//else TODO;
-
-	return -1; // 임시구현
+	if (index - lo == k - 1)
+	{
+		return arr[index];
+	}
+	else if (k - 1 < index - lo)
+	{
+		return RandomizedSelect(arr, lo, index - 1, k);
+	}
+	else
+	{
+		return RandomizedSelect(arr, index + 1, hi, k - (index + 1 - lo));
+	}
 }
 
 int main()
 {
-	srand(1); // 랜덤 피벗을 사용할 때는 숫자를 바꿔가면서 테스트해보세요.
+	srand(3); // 랜덤 피벗을 사용할 때는 숫자를 바꿔가면서 테스트해보세요.
 
 	//vector<int> my_vector = { 6, 19, 4, 12, 14, 9, 15, 7, 8, 11, 3, 13, 2, 5, 10 };
 	//vector<int> my_vector = { 4, 19, 4, 12, 2, 9, 15, 2, 8, 11, 3, 1, 2, 1, 10 };
 	vector<int> my_vector = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
-	Print(my_vector, 0, my_vector.size() - 1);
+	// Print(my_vector, 0, my_vector.size() - 1);
 
 	cout << RandomizedSelect(my_vector, 0, my_vector.size() - 1, std::ceil(my_vector.size() / 2.0)) << endl;
 	// 주의: k는 k번째를 의미, 인덱스는 0부터 시작하기 때문에 인덱스로는 k - 1 자리
