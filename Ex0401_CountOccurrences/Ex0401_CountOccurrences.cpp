@@ -15,20 +15,147 @@ void Print(vector<int>& arr)
 
 int Count1(const vector<int>& arr, int x)
 {
-	//TODO: O(n)
-	return 0;
+	int count = 0;
+
+	for (int i : arr)
+	{
+		if (i == x)
+		{
+			++count;
+		}
+	}
+
+	return count;
 }
 
 int Count2(const vector<int>& arr, int x)
 {
-	//TODO: O(log(n) + count)
-	return 0;
+	int leftIdx = 0;
+	int rightIdx = arr.size() - 1;
+	int midIdx = 0;
+	int count = 0;
+
+	while (leftIdx <= rightIdx)
+	{
+		midIdx = leftIdx + (rightIdx - leftIdx) / 2;
+
+		if (arr[midIdx] < x)
+		{
+			leftIdx = midIdx + 1;
+		}
+		else if (x < arr[midIdx])
+		{
+			rightIdx = midIdx - 1;
+		}
+		else
+		{
+			++count;
+			break;
+		}
+	}
+
+	leftIdx = midIdx - 1;
+	rightIdx = midIdx + 1;
+
+	while ((-1 < leftIdx) && (arr[leftIdx] == x))
+	{
+		++count;
+		--leftIdx;
+	}
+
+	while ((rightIdx < arr.size()) && (arr[rightIdx] == x))
+	{
+		++count;
+		++rightIdx;
+	}
+
+	return count;
 }
 
 int Count3(const vector<int>& arr, int x)
 {
-	//TODO: O(log(n))
-	return 0;
+	int leftIdx = 0;
+	int rightIdx = arr.size() - 1;
+	int midIdx = 0;
+
+	while (leftIdx <= rightIdx)
+	{
+		midIdx = leftIdx + (rightIdx - leftIdx) / 2;
+
+		if (arr[midIdx] < x)
+		{
+			leftIdx = midIdx + 1;
+		}
+		else if (x < arr[midIdx])
+		{
+			rightIdx = midIdx - 1;
+		}
+		else
+		{
+			break;
+		}
+	}
+
+	if (rightIdx < leftIdx)
+	{
+		return 0;
+	}
+
+	int lowestIdx = 0;
+	int lowLeftIdx = leftIdx;
+	int lowRightIdx = rightIdx;
+
+	while (lowLeftIdx <= lowRightIdx)
+	{
+		lowestIdx = lowLeftIdx + (lowRightIdx - lowLeftIdx) / 2;
+
+		if (arr[lowestIdx] < x)
+		{
+			lowLeftIdx = lowestIdx + 1;
+		}
+		else if (x < arr[lowestIdx])
+		{
+			lowRightIdx = lowestIdx - 1;
+		}
+		else
+		{
+			if ((lowestIdx == 0) || (arr[lowestIdx - 1] != x))
+			{
+				break;
+			}
+
+			lowRightIdx = lowestIdx - 1;
+		}
+	}
+
+	int highestIdx = 0;
+	int highLeftIdx = leftIdx;
+	int highRightIdx = rightIdx;
+
+	while (highLeftIdx <= highRightIdx)
+	{
+		highestIdx = highLeftIdx + (highRightIdx - highLeftIdx) / 2;
+
+		if (arr[highestIdx] < x)
+		{
+			highLeftIdx = highestIdx + 1;
+		}
+		else if (x < arr[highestIdx])
+		{
+			highRightIdx = highestIdx - 1;
+		}
+		else
+		{
+			if ((highestIdx == arr.size() - 1) || (arr[highestIdx + 1] != x))
+			{
+				break;
+			}
+
+			highLeftIdx = highestIdx + 1;
+		}
+	}
+
+	return highestIdx - lowestIdx + 1;
 }
 
 int main()
