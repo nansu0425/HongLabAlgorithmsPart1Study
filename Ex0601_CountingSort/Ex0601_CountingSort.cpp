@@ -24,7 +24,15 @@ vector<int> CountingSort(const vector<int>& arr, int k)
 {
 	vector<int> count(k + 1, 0); // 0이상 k이하니까 k + 1개를 0으로 초기화
 
-	// TODO:
+	for (int arrElem : arr)
+	{
+		++count[arrElem];
+	}
+
+	for (int countIdx = 1; countIdx < count.size(); ++countIdx)
+	{
+		count[countIdx] += count[countIdx - 1];
+	}
 
 	cout << "Count: ";
 	Print(count);
@@ -34,7 +42,8 @@ vector<int> CountingSort(const vector<int>& arr, int k)
 	// 역순으로 복사
 	for (int i = output.size() - 1; i >= 0; i--)
 	{
-		// TODO:
+		--count[arr[i]];
+		output[count[arr[i]]] = arr[i];
 
 		cout << "Count: ";
 		Print(count);
