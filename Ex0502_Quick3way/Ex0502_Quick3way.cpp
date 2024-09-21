@@ -1,6 +1,8 @@
 ﻿#include <vector>
 #include <iostream>
 #include <iomanip>
+#include <cassert>
+
 using namespace std;
 
 void Print(vector<int>& arr, int lo, int hi, string sep = "")
@@ -23,22 +25,44 @@ void Print(vector<int>& arr, int lo, int hi, string sep = "")
 
 // Quicksort with 3-way partitioning, Sedgewick p299
 // (Dijkstra's Dutch national flag problem)
-void Quick3way(vector<int>& arr, int lo, int hi)
+void Quick3way(vector<int>& arr, int leftIdx, int rightIdx)
 {
-	if (hi <= lo) return;
+	if (rightIdx <= leftIdx) 
+	{
+		return;
+	}
 
-	int lt = lo, i = lo + 1, gt = hi;
-	int v = arr[lo];
+	int highIdx = leftIdx;
+	int lowIdx = leftIdx;
+	int pivotVal = arr[leftIdx];
 
-	//while (i <= gt)
-	//{
-	//	// TODO:
-	//}
+	for (int compIdx = leftIdx + 1; compIdx <= rightIdx; ++compIdx)
+	{
+		// 비교 원소가 피벗 원소보다 작은 경우
+		if (arr[compIdx] < pivotVal)
+		{
+			// 피벗보다 큰 원소가 있는 경우
+			if (highIdx < compIdx - 1)
+			{
+				std::swap(arr[lowIdx], arr[highIdx + 1]);
+			}
 
-	Print(arr, lo, hi);
+			std::swap(arr[lowIdx], arr[compIdx]);
+			++lowIdx;
+			++highIdx;
+		}
+		// 비교 원소와 피벗 값이 같은 경우
+		else if (arr[compIdx] == pivotVal)
+		{
+			++highIdx;
+			std::swap(arr[highIdx], arr[compIdx]);
+		}
+	}
 
-	//Quick3way(arr, lo, lt - 1);
-	//Quick3way(arr, gt + 1, hi);
+	Print(arr, leftIdx, rightIdx);
+
+	Quick3way(arr, leftIdx, lowIdx - 1);
+	Quick3way(arr, highIdx + 1, rightIdx);
 }
 
 int main()
