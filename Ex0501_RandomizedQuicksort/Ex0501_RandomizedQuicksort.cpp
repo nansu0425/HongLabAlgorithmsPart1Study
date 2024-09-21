@@ -50,14 +50,22 @@ int RandomizedPartition(vector<int>& arr, int lo, int hi)
 
 void RandomizedQuicksort(vector<int>& arr, int lo, int hi)
 {
+	if (lo >= hi)
+	{
+		return;
+	}
+
 	Print(arr, lo, hi);
 
-	// TODO:
+	int pivotIndex = RandomizedPartition(arr, lo, hi);
+	
+	RandomizedQuicksort(arr, lo, pivotIndex - 1);
+	RandomizedQuicksort(arr, pivotIndex + 1, hi);
 }
 
 int main()
 {
-	srand(2);
+	srand(10);
 
 	vector<int> arr = { 9, 8, 7, 6, 5, 4, 3, 2, 1, 0 };
 
