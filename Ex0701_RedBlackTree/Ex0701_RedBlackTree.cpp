@@ -12,7 +12,11 @@ using namespace std;
 using Key = string; // 구현 단순화(템플릿 미사용)
 using Value = int;  // 구현 단순화(템플릿 미사용)
 
-enum Color { kRed, kBlack };
+enum class Color 
+{ 
+	red,
+	black 
+};
 // C-style로 구현한다면
 // #define RED true
 // #define BLACK false
@@ -20,16 +24,20 @@ enum Color { kRed, kBlack };
 class Node
 {
 public:
-	Key key;
-	Value val;
-	Node* left;
-	Node* right;
-	int size; // 서브트리 노드수, 여기서는 사용안함
-	Color color;
+	Key		key;
+	Value	val;
+	Node*	pLeft;
+	Node*	pRight;
+	int		size; // 서브트리 노드수, 여기서는 사용안함
+	Color	color;
 
-	Node(Key key, Value val, int N, Color color)
-		: key(key), val(val), size(N), color(color),
-		left(nullptr), right(nullptr) // 널 포인터로 초기화
+	Node(Key key, Value val, int size, Color color)
+		: key(key)
+		, val(val)
+		, size(size)
+		, color(color)
+		, pLeft(nullptr)
+		, pRight(nullptr) // 널 포인터로 초기화
 	{}
 
 	// 자바로 구현할 때는 널포인터 대신에 
@@ -48,7 +56,7 @@ public:
 	bool IsRed(Node* x)
 	{
 		if (x == nullptr) return false; // 널노드는 블랙
-		return x->color == Color::kRed;
+		return x->color == Color::red;
 	}
 
 	int Size() { return Size(root); }
@@ -60,26 +68,48 @@ public:
 
 	// 이진트리 복습
 	Value Search(Key key) { return Search(root, key); }
-	Value Search(Node* x, Key key)
+	Value Search(Node* pRoot, Key key)
 	{
-		if (x == nullptr) return -1; // 편의상 못 찾았을 경우 -1 반환
+		if (pRoot == nullptr) 
+		{
+			return -1;
+		}
 
-		// if (key < x->key) TODO:
-		// else if (key > x->key) TODO:
-		// else return x->val;
-		return -1; // TODO: 삭제
+		if (key < pRoot->key)
+		{
+			return Search(pRoot->pLeft, key);
+		}
+		else if (key > pRoot->key)
+		{
+			return Search(pRoot->pRight, key);
+		}
+		else 
+		{
+			return pRoot->val;
+		}
 	}
 
 	// 이진트리 복습
 	bool Contains(Key key) { return Contains(root, key); }
-	bool Contains(Node* x, Key key)
+	bool Contains(Node* pRoot, Key key)
 	{
-		if (x == nullptr) return false;
+		if (pRoot == nullptr) 
+		{
+			return false;
+		}
 
-		// if (key < x->key) TODO:
-		// else if (key > x->key) TODO:
-		// else return true;
-		return false; // 삭제
+		if (key < pRoot->key)
+		{
+			return Contains(pRoot->pLeft, key);
+		}
+		else if (key > pRoot->key)
+		{
+			return Contains(pRoot->pRight, key);
+		}
+		else
+		{
+			return true;
+		}
 	}
 
 	// 키(key)가 가장 작은 노드 찾기 (이진트리 복습)
@@ -87,10 +117,16 @@ public:
 		assert(!IsEmpty());
 		return Min(root)->key;
 	}
-	Node* Min(Node* x)
+	Node* Min(Node* pRoot)
 	{
-		// return TODO:
-		return nullptr; // 삭제
+		Node* pCur = pRoot;
+
+		while (pCur->pLeft != nullptr)
+		{
+			pCur = pCur->pLeft;
+		}
+		
+		return pCur;
 	}
 
 	// 키(key)가 가장 큰 노드 찾기 (이진트리 복습)
@@ -98,99 +134,131 @@ public:
 		assert(!IsEmpty());
 		return Max(root)->key;
 	}
-	Node* Max(Node* x)
+	Node* Max(Node* pRoot)
 	{
-		// return TODO:
-		return nullptr; // 삭제
+		Node* pCur = pRoot;
+
+		while (pCur->pRight != nullptr)
+		{
+			pCur = pCur->pRight;
+		}
+
+		return pCur; 
 	}
 
 	// AVL과 비슷
-	Node* RotateLeft(Node* h)
+	Node* RotateLeft(Node* pRoot)
 	{
-		Node* x = h->right; // 회전 후에 부모 자리로 올라갈 노드
-		// h->right = TODO
-		// x->left = TODO
-		x->color = h->color;
-		h->color = Color::kRed; // 일단 레드로 설정 후 나중에 수정
-		x->size = h->size;
-		h->size = 1 + Size(h->left) + Size(h->right);
-		return x;
+		Node* pNewRoot = pRoot->pRight; // 회전 후에 부모 자리로 올라갈 노드
+		pRoot->pRight = pNewRoot->pLeft;
+		pNewRoot->pLeft = pRoot;
+
+		pNewRoot->color = pRoot->color;
+		pRoot->color = Color::red; // 일단 레드로 설정 후 나중에 수정
+		pNewRoot->size = pRoot->size;
+		pRoot->size = 1 + Size(pRoot->pLeft) + Size(pRoot->pRight);
+		return pNewRoot;
 	}
 
 	// AVL과 비슷
-	Node* RotateRight(Node* h)
+	Node* RotateRight(Node* pRoot)
 	{
-		Node* x = h->left; // 회전 후에 부모 자리로 올라갈 노드
-		// h->left = TODO
-		// x->right = TODO
-		x->color = h->color;
-		h->color = Color::kRed; // 일단 레드로 설정 후 나중에 수정
-		x->size = h->size;
-		h->size = 1 + Size(h->left) + Size(h->right);
-		return x;
+		Node* pNewRoot = pRoot->pLeft; // 회전 후에 부모 자리로 올라갈 노드
+		pRoot->pLeft = pNewRoot->pRight;
+		pNewRoot->pRight = pRoot;
+
+		pNewRoot->color = pRoot->color;
+		pRoot->color = Color::red; // 일단 레드로 설정 후 나중에 수정
+		pNewRoot->size = pRoot->size;
+		pRoot->size = 1 + Size(pRoot->pLeft) + Size(pRoot->pRight);
+		return pNewRoot;
 	}
 
 	void FlipColor(Color& c)
 	{
-		if (c == Color::kRed)
-			c = Color::kBlack;
+		if (c == Color::red)
+			c = Color::black;
 		else
-			c = Color::kRed;
+			c = Color::red;
 	}
 
 	void FlipColors(Node* h)
 	{
 		FlipColor(h->color);
-		FlipColor(h->left->color);
-		FlipColor(h->right->color);
+		FlipColor(h->pLeft->color);
+		FlipColor(h->pRight->color);
 	}
 
 	// 균형을 맞춰주는 함수
-	Node* Balance(Node* h) 	// restore red-black tree invariant
+	Node* Balance(Node* pRoot) 	// restore red-black tree invariant
 	{
-		assert(h != nullptr);
+		assert(pRoot != nullptr);
 
 		// 아래 힌트
 		// 1. IsRed()에서 널노드는 블랙으로 간주(false 반환)
 		// 2. else-if가 아니라 if  
 
-		// 오른쪽이 레드이고 왼쪽은 레드가 아니면?
-		// if (TODO) h = TODO
+		// 오른쪽 자식만 레드인 경우
+		if (!IsRed(pRoot->pLeft) && 
+			IsRed(pRoot->pRight))
+		{
+			pRoot = RotateLeft(pRoot);
+		}
 
-		// 왼쪽과 왼쪽의 왼쪽이 둘 다 레드이면?
-		// if (TODO) h = TODO
+		// 왼쪽 자식과 왼쪽 자식의 왼쪽 자식 모두 레드인 경우
+		if (IsRed(pRoot->pLeft) &&
+			(pRoot->pLeft != nullptr) &&
+			IsRed(pRoot->pLeft->pLeft))
+		{
+			pRoot = RotateRight(pRoot);
+		}
 
-		// 왼쪽, 오른쪽이 둘 다 레드이면? 
-		// if (TODO) TODO
+		// 왼쪽 자식과 오른쪽 자식 모두 레드인 경우 
+		if (IsRed(pRoot->pLeft) && 
+			IsRed(pRoot->pRight))
+		{
+			FlipColors(pRoot);
+		}
 
-		h->size = Size(h->left) + Size(h->right) + 1;
+		pRoot->size = Size(pRoot->pLeft) + Size(pRoot->pRight) + 1;
 
-		return h;
+		return pRoot;
 	}
 
 	void Insert(Key key, Value val)
 	{
 		root = Insert(root, key, val);
-		root->color = Color::kBlack; // 루트는 블랙
+		root->color = Color::black; // 루트는 블랙
 	}
 
-	Node* Insert(Node* h, Key key, Value val)
+	Node* Insert(Node* pRoot, Key key, Value val)
 	{
 		// 새 노드는 일단 레드
-		if (h == nullptr)
-			return new Node(key, val, 1, Color::kRed);
+		if (pRoot == nullptr)
+		{
+			return new Node(key, val, 1, Color::red);
+		}
 
 		// key를 비교해서 재귀호출 (키가 같으면 val 업데이트)
 		// 이진트리와 동일
-		if (key < h->key) h->left = Insert(h->left, key, val);
-		else if (key > h->key) h->right = Insert(h->right, key, val);
-		else h->val = val;
+		if (key < pRoot->key) 
+		{
+			pRoot->pLeft = Insert(pRoot->pLeft, key, val);
+		}
+		else if (key > pRoot->key) 
+		{
+			pRoot->pRight = Insert(pRoot->pRight, key, val);
+		}
+		else 
+		{
+			pRoot->val = val;
+		}
 
 		// Insert()는 재귀호출됩니다.
 		// 여기서 반환되면 트리를 거슬러 올라가면서 
 		// 추가로 자식들의 색을 보고 수정합니다.
 
-		return Balance(h); // <- Balance() 구현
+		return Balance(pRoot); // <- Balance() 구현
 	}
 
 	// 삭제할 때 사용됨 (실행 예시 설명 참고)
@@ -231,14 +299,14 @@ public:
 		assert(!IsEmpty());
 
 		// 루트가 가운데인 4-노드로 임시 변경
-		if (!IsRed(root->left) && !IsRed(root->right))
-			root->color = Color::kRed;
+		if (!IsRed(root->pLeft) && !IsRed(root->pRight))
+			root->color = Color::red;
 
 		root = DeleteMin(root);
 
 		// 루트는 항상 블랙
 		if (!IsEmpty())
-			root->color = Color::kBlack;
+			root->color = Color::black;
 	}
 
 	Node* DeleteMin(Node* h)
@@ -263,7 +331,7 @@ public:
 		//}
 
 		// 계속 찾아 내려감
-		h->left = DeleteMin(h->left);
+		h->pLeft = DeleteMin(h->pLeft);
 
 		return Balance(h);
 	}
@@ -285,12 +353,12 @@ public:
 		// 삭제하려는 키를 가진 노드가 존재하는지 미리 확인
 		if (!Contains(key)) return;
 
-		if (!IsRed(root->left) && !IsRed(root->right))
-			root->color = Color::kRed;
+		if (!IsRed(root->pLeft) && !IsRed(root->pRight))
+			root->color = Color::red;
 
 		root = Delete(root, key);
 
-		if (!IsEmpty()) root->color = Color::kBlack;
+		if (!IsEmpty()) root->color = Color::black;
 	}
 
 	Node* Delete(Node* h, Key key)
@@ -344,7 +412,7 @@ public:
 	int Height(Node* node)
 	{
 		if (!node) return -1;
-		return 1 + std::max(Height(node->left), Height(node->right));
+		return 1 + std::max(Height(node->pLeft), Height(node->pRight));
 	}
 
 	// 디버깅 편의 도구
@@ -369,14 +437,14 @@ public:
 		//cout << x << " " << level << " " << s << endl;
 		PrintLine(x, (IsRed(n) ? "*" : " ") + n->key, screen[2 * level]);
 		x -= int(pow(2, s));
-		if (n->left) {
+		if (n->pLeft) {
 			PrintLine(x, "  /", screen[2 * level + 1]);
-			Print2D(n->left, x, level + 1, s - 1);
+			Print2D(n->pLeft, x, level + 1, s - 1);
 		}
-		if (n->right)
+		if (n->pRight)
 		{
 			PrintLine(x + 2 * int(pow(2, s)), "\\", screen[2 * level + 1]);
-			Print2D(n->right, x + 2 * int(pow(2, s)), level + 1, s - 1);
+			Print2D(n->pRight, x + 2 * int(pow(2, s)), level + 1, s - 1);
 		}
 	}
 };
