@@ -6,6 +6,7 @@
 #include <chrono>
 #include <numeric>
 #include <iomanip>
+
 using namespace std;
 
 void Print(vector<float>& arr)
@@ -44,17 +45,44 @@ void BucketSort(vector<float>& arr, int num_buckets)
 {
 	vector<vector<float>> buckets(num_buckets);
 
-	// TODO:
+	// buckets에 arr 원소를 분류
+	for (int arrIdx = 0; arrIdx < arr.size(); ++arrIdx)
+	{
+		int key = arr[arrIdx] * 10;
+		buckets[key].push_back(arr[arrIdx]);
+	}
 
 	cout << "Before sorting" << endl;
 	PrintBuckets(buckets);
 
-	// TODO:
+	for (int bucketIdx = 0; bucketIdx < num_buckets; ++bucketIdx)
+	{
+		// bucket에 원소가 없으면 다음 반복으로 넘어간다
+		if (buckets[bucketIdx].size() == 0)
+		{
+			continue;
+		}
+
+		InsertionSort(buckets[bucketIdx]);
+	}
 
 	cout << "After sorting" << endl;
 	PrintBuckets(buckets);
 
-	// TODO:
+	int arrIdx = 0;
+
+	for (int bucketIdx = 0; bucketIdx < num_buckets; ++bucketIdx)
+	{
+		// bucket에 원소가 없으면 다음 반복으로 넘어간다
+		if (buckets[bucketIdx].size() == 0)
+		{
+			continue;
+		}
+
+		// bucket 원소들을 arr에 복사
+		std::copy(buckets[bucketIdx].begin(), buckets[bucketIdx].end(), arr.begin() + arrIdx);
+		arrIdx += buckets[bucketIdx].size();
+	}
 }
 
 int main()
