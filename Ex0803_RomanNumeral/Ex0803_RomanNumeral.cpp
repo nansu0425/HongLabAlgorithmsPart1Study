@@ -22,7 +22,16 @@ int RomanToInt(string s)
 
 	for (int i = 0; i < s.length(); i++)
 	{
-		// TODO:
+		// 작은 숫자 다음에 큰 숫자가 오는 경우
+		if ((i < s.length() - 1) && (m[s[i]] < m[s[i + 1]]))
+		{
+			ans -= m[s[i]];
+		}
+		// 간단히 더하면 되는 경우
+		else
+		{
+			ans += m[s[i]];
+		}
 	}
 
 	cout << s << " = " << ans << endl;
