@@ -81,7 +81,20 @@ public:
 		post = queue<Vertex*>(); // 비교 용도
 		revPost = stack<Vertex*>();
 
-		// TODO: 
+		// 방문 정보 초기화
+		for (Vertex* pVertex : vertices)
+		{
+			pVertex->visited = false;
+		}
+
+		// 방문하지 않은 정점들에 대해 위상 정렬 재귀 함수 호출
+		for (Vertex* pVertex : vertices)
+		{
+			if (pVertex->visited == false)
+			{
+				TopologicalSortHelper(pVertex);
+			}
+		}
 
 		return revPost;
 	}
@@ -89,9 +102,23 @@ public:
 private:
 	vector<Vertex*> vertices;
 
-	void TopologicalSortHelper(Vertex* v)
+	void TopologicalSortHelper(Vertex* pCur)
 	{
-		//TODO: pre, post, revPost에 저장하기 
+		//TODO: pre, post, revPost에 저장하기
+		pCur->visited = true;
+
+		pre.push(pCur);
+
+		for (Vertex* outNeighbor : pCur->out_neighbors)
+		{
+			if (outNeighbor->visited == false)
+			{
+				TopologicalSortHelper(outNeighbor);
+			}
+		}
+
+		post.push(pCur);
+		revPost.push(pCur);
 	}
 };
 
