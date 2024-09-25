@@ -84,16 +84,44 @@ public:
 	stack<Vertex*> QueueBasedTopologicalSort()
 	{
 		vector<int> indegree(vertices.size()); // indegree를 Vertex에 저장할 수도 있습니다.
-		// TODO:
+
+		for (Vertex* pVertex : vertices)
+		{
+			indegree[pVertex->value] = pVertex->in_neighbors.size();
+		}
 
 		queue<Vertex*> q;
 
 		// indegree가 0인 vertex들을 q에 넣기
-		// TODO:
+		for (int vertexIdx = 0; vertexIdx < indegree.size(); ++vertexIdx)
+		{
+			if (indegree[vertexIdx] == 0)
+			{
+				q.push(vertices[vertexIdx]);
+			}
+		}
 
 		vector<Vertex*> result;
 
-		// TODO:
+		// result에 정점을 위상 정렬
+		while (q.empty() == false)
+		{
+			Vertex* pVertex = q.front();
+			q.pop();
+
+			result.push_back(pVertex);
+
+			// out neighbors의 indegree를 줄이고 0이 되는 정점은 큐에 추가
+			for (Vertex* outNeighbor : pVertex->out_neighbors)
+			{
+				--indegree[outNeighbor->value];
+
+				if (indegree[outNeighbor->value] == 0)
+				{
+					q.push(outNeighbor);
+				}
+			}
+		}
 
 		// 뒤에서 DFS 방식 예제와의 호환성을 위해 역순으로 stack에 저장
 		stack<Vertex*> s;
