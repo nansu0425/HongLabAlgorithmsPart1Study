@@ -22,7 +22,14 @@ public:
 
 	Node* Find(T_KEY key)
 	{
-		// TODO: 찾았을 경우 주소 반환
+		// 찾았을 경우 주소 반환
+		for (Node& node : m_chain)
+		{
+			if (node.key == key)
+			{
+				return &node;
+			}
+		}
 
 		// 못 찾았을 경우 nullptr 반환
 		// 찾았는지 못 찾았는 지에 대한 대응을 호출한 쪽으로 넘기는 방식
@@ -35,30 +42,34 @@ public:
 
 	void Insert(Node n)
 	{
-		// TODO: 키를 찾아봤는데 없으면 추가
+		// 키를 찾아봤는데 없으면 추가
+		if (Find(n.key) == nullptr)
+		{
+			m_chain.push_back(n);
+		}
 
 		// 이미 있을 경우에는 추가 X
 	}
 
 	void Reset()
 	{
-		list.clear();
+		m_chain.clear();
 	}
 
 	void Print()
 	{
-		for (auto& n : list)
+		for (auto& n : m_chain)
 			cout << "(" << n.key << ", " << n.value << ")->";
 		cout << endl;
 	}
 
 	int Size()
 	{
-		return int(list.size());
+		return int(m_chain.size());
 	}
 
 private:
-	list<Node> list;
+	list<Node> m_chain;
 };
 
 template<typename T_KEY, typename T_VALUE>
@@ -69,43 +80,45 @@ public:
 
 	SeparateChaining(int c)
 	{
-		st.resize(c);
+		m_hashTable.resize(c);
 		Reset();
 	}
 
 	Node* Find(T_KEY k)
 	{
-		// TODO:
+		const int hashVal = HashFunc(k);
 
-		return nullptr;
+		return m_hashTable[hashVal].Find(k);;
 	}
 
 	void Insert(Node n)
 	{
-		// TODO:
+		const int hashVal = HashFunc(n.key);
+
+		m_hashTable[hashVal].Insert(n);
 	}
 
 	void Reset()
 	{
-		for (auto& s : st)
+		for (auto& s : m_hashTable)
 			s.Reset();
 	}
 
 	void Print()
 	{
-		for (int i = 0; i < st.size(); i++)
+		for (int i = 0; i < m_hashTable.size(); i++)
 		{
 			cout << i << ": ";
-			st[i].Print();
+			m_hashTable[i].Print();
 		}
 	}
 
 private:
-	vector<SequentialSearch<T_KEY, T_VALUE>> st;
+	vector<SequentialSearch<T_KEY, T_VALUE>> m_hashTable;
 
 	int HashFunc(int key)
 	{
-		return key % st.size(); // 가장 간단한 해시 함수 사용
+		return key % m_hashTable.size(); // 가장 간단한 해시 함수 사용
 	}
 
 	// int Hash(string key){ /* string을 hash값으로 변환 */ }
