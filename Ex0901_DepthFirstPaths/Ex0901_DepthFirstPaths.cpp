@@ -80,7 +80,25 @@ private:
 		path.push_back(source);
 		PrintPath(path);
 
-		// TODO:
+		if (source == sink)
+		{
+			std::cout << "Found: ";
+			PrintPath(path);
+
+			return;
+		}
+
+		source->visited = true;
+
+		for (auto* pNeighbor : source->out_neighbors)
+		{
+			if (pNeighbor->visited == false)
+			{
+				DepthFirstPathHelper(pNeighbor, sink, path);
+			}
+		}
+
+		source->visited = false;
 	}
 
 	void PrintPath(vector<Vertex*> path)
