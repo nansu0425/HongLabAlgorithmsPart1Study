@@ -47,31 +47,66 @@ public:
 
 	void BruteForceStrongComponents()
 	{
-		int count = 0;
-		vector<int> id(vertices.size(), -1);
+		int componentCount = 0;
+		vector<int> componentIds(vertices.size(), -1);
 
 		// TODO: HasPath()를 이용해서 서로 강하게 연결된 요소들을 찾습니다.
+		for (Vertex* pVertex : vertices)
+		{
+			if (componentIds[pVertex->value] == -1)
+			{
+				componentIds[pVertex->value] = componentCount;
+
+				for (int vertexId = pVertex->value + 1; vertexId < vertices.size(); ++vertexId)
+				{
+					if ((componentIds[vertexId] == -1) && 
+						HasPath(pVertex->value, vertexId) &&
+						HasPath(vertexId, pVertex->value))
+					{
+						componentIds[vertexId] = componentCount;
+					}
+				}
+
+				++componentCount;
+			}
+		}
 
 		// 결과 정리 후 출력
-		//vector<vector<int>> components(count);
-		//for (int s = 0; s < vertices.size(); s++)
-		//	components[id[s]].push_back(s);
-		//cout << count << " strong components" << endl;
-		//for (int i = 0; i < components.size(); i++)
-		//{
-		//	cout << "Strong component " << i + 1 << ": ";
-		//	for (auto v : components[i])
-		//		cout << v << " ";
-		//	cout << endl;
-		//}
+		vector<vector<int>> components(componentCount);
+
+		for (int s = 0; s < vertices.size(); s++)
+			components[componentIds[s]].push_back(s);
+		cout << componentCount << " strong components" << endl;
+		for (int i = 0; i < components.size(); i++)
+		{
+			cout << "Strong component " << i + 1 << ": ";
+			for (auto v : components[i])
+				cout << v << " ";
+			cout << endl;
+		}
 	}
 
 private:
 	vector<Vertex*> vertices;
 
-	bool HasPathHelper(Vertex* v, Vertex* t)
+	bool HasPathHelper(Vertex* pSrc, Vertex* pDest)
 	{
 		// TODO: DFS 방식으로 v와 t가 만날 수 있는 지를 확인합니다.
+		if (pSrc == pDest)
+		{
+			return true;
+		}
+
+		pSrc->visited = true;
+
+		for (Vertex* pOutNeighbor : pSrc->out_neighbors)
+		{
+			if ((pOutNeighbor->visited == false) && 
+				(HasPathHelper(pOutNeighbor, pDest) == true))
+			{
+				return true;
+			}
+		}
 
 		return false;
 	}
