@@ -75,7 +75,7 @@ public:
 					w->visited = true;
 					q.push(w);
 
-					// prev[TODO] = TODO
+					prev[w->value] = v;
 				}
 			}
 		}
@@ -84,10 +84,26 @@ public:
 
 		// TODO: prev를 이용해서 path 만들기
 		//       deque의 push_front() 사용
+		if (prev[sink] == nullptr)
+		{
+			std::cout << "No path found" << std::endl;
+		}
+		else
+		{
+			path.push_front(vertices[sink]);
+		}
 
+		Vertex* pPrev = prev[sink];
+
+		while (pPrev != nullptr)
+		{
+			path.push_front(pPrev);
+			pPrev = prev[pPrev->value];
+		}
 
 		// 결과 출력 (숫자만)
-		for (auto* v : path) {
+		for (auto* v : path)
+		{
 			cout << v->value;
 			if (v != path.back())
 				cout << " -> ";
