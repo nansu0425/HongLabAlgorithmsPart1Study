@@ -42,36 +42,62 @@ public:
 		vertices[w]->out_neighbors.push_back(vertices[v]);
 	}
 
-	void DFS(Vertex* v)
+	void DFS(Vertex* pSrc)
 	{
-		// TODO:
+		pSrc->visited = true;
+		componentIds[pSrc->value] = componentCount;
+
+		for (Vertex* pOutNeighbor : pSrc->out_neighbors)
+		{
+			if (pOutNeighbor->visited == false)
+			{
+				DFS(pOutNeighbor);
+			}
+		}
 	}
 
 	void ConnectedComponents()
 	{
-		count = 0;
-		id.resize(vertices.size(), -1);
+		componentCount = 0;
+		componentIds.resize(vertices.size(), -1);
 
-		// TODO:
+		for (Vertex* pVertex : vertices)
+		{
+			pVertex->visited = false;
+		}
+
+		for (Vertex* pSrc : vertices)
+		{
+			if (pSrc->visited == false)
+			{
+				DFS(pSrc);
+				++componentCount;
+			}
+		}
 
 		// 결과 정리 후 출력
-		//vector<vector<int>> components(count);
-		//for (int s = 0; s < vertices.size(); s++)
-		//	components[id[s]].push_back(s);
-		//cout << count << " components" << endl;
-		//for (int i = 0; i < components.size(); i++)
-		//{
-		//	cout << "Component " << i + 1 << ": ";
-		//	for (auto v : components[i])
-		//		cout << v << " ";
-		//	cout << endl;
-		//}
+		vector<vector<int>> components(componentCount);
+
+		for (int vertexId = 0; vertexId < vertices.size(); vertexId++)
+		{
+			components[componentIds[vertexId]].push_back(vertexId);
+		}
+
+		cout << componentCount << " components" << endl;
+
+		for (int i = 0; i < components.size(); i++)
+		{
+			cout << "Component " << i + 1 << ": ";
+			for (auto v : components[i])
+				cout << v << " ";
+			cout << endl;
+		}
 	}
 
 private:
 	vector<Vertex*> vertices;
-	vector<int> id;
-	int count = 0;
+	vector<int> componentIds;
+	int componentCount = 0;
 };
 
 
