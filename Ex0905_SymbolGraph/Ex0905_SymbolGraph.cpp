@@ -29,6 +29,11 @@ public:
 		vertices.reserve(keys.size());
 
 		// TODO: vertices와 table 초기화
+		for (int keyIdx = 0; keyIdx < keys.size(); ++keyIdx)
+		{
+			vertices.push_back(new Vertex{ keys[keyIdx], keyIdx });
+			table[keys[keyIdx]] = keyIdx;
+		}
 
 		// 확인용
 		for (auto v : vertices)
@@ -46,6 +51,8 @@ public:
 	void AddDiEdge(string kv, string kw)
 	{
 		// TODO: table 이용
+		vertices[table[kv]]->out_neighbors.push_back(vertices[table[kw]]);
+
 	}
 
 	void AddDiEdge(int v, int w) // 단방향 간선
@@ -53,9 +60,15 @@ public:
 		vertices[v]->out_neighbors.push_back(vertices[w]);
 	}
 
-	void DFS(string k)
+	void DFS(string srcKey)
 	{
 		// TODO: table 이용
+		for (Vertex* pVertex : vertices)
+		{
+			pVertex->visited = false;
+		}
+
+		DFS(vertices[table[srcKey]]);
 	}
 
 	void DFS(int source)
