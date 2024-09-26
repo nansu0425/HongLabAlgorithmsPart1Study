@@ -56,55 +56,115 @@ public:
 
 	void Transpose()
 	{
-		// TODO:
-
 		// 인접 행렬 표현에서 행렬을 transpose 시키는 것과 동일
+		for (Vertex* pVertex : vertices)
+		{
+			std::swap(pVertex->in_neighbors, pVertex->out_neighbors);
+		}
 	}
 
 	void KosarajuStrongComponents()
 	{
-		Transpose(); // 생략하면 출력 순서는 달라지만 결과는 동일
+		// 그래프의 모든 간선 방향을 반대로 바꾼다
+		// Transpose(); // 생략하면 출력 순서는 달라지만 결과는 동일
 
-		// deque<Vertex*> revpost = TODO; // 아래 for문 편의상 stack대신 deque 사용
+		// 방문 기록 초기화
+		for (Vertex* pVertex : vertices)
+		{
+			pVertex->visited = false;
+		}
+
+		// reverse postorder 탐색 기록을 revpost에 저장
+		for (Vertex* pSrc : vertices)
+		{
+			if (pSrc->visited == false)
+			{
+				ReversePostorderDFS(pSrc);
+			}
+		}
 
 		cout << "Reverse Post-order: ";
-		//for (auto* v : revpost)
-		//	cout << v->value << " ";
-		//cout << endl;
 
+		for (auto* v : revpost)
+		{
+			cout << v->value << " ";
+		}
+
+		cout << endl;
+
+		// 원본 그래프로 돌아온다
 		Transpose();
 
-		// TODO:
+		// SCC id 정보 초기화
+		componentIds.resize(revpost.size(), -1);
+
+		// 방문 기록 초기화
+		for (Vertex* pVertex : vertices)
+		{
+			pVertex->visited = false;
+		}
+
+		// 각 SCC를 DFS로 분류
+		for (Vertex* pVertex : revpost)
+		{
+			if (componentIds[pVertex->value] == -1)
+			{
+				DFS(pVertex);
+				++componentCount;
+			}
+		}
 
 		// 결과 정리 후 출력
-		//vector<vector<int>> components(count);
-		//for (int s = 0; s < vertices.size(); s++)
-		//	components[id[s]].push_back(s);
-		//cout << count << " strong components" << endl;
-		//for (int i = 0; i < components.size(); i++)
-		//{
-		//	cout << "Kosaraju strong component " << i + 1 << ": ";
-		//	for (auto v : components[i])
-		//		cout << v << " ";
-		//	cout << endl;
-		//}
+		vector<vector<int>> components(componentCount);
+
+		for (int s = 0; s < vertices.size(); s++)
+			components[componentIds[s]].push_back(s);
+
+		cout << componentCount << " strong components" << endl;
+
+		for (int i = 0; i < components.size(); i++)
+		{
+			cout << "Kosaraju strong component " << i + 1 << ": ";
+			for (auto v : components[i])
+				cout << v << " ";
+			cout << endl;
+		}
 	}
 
 private:
 	vector<Vertex*> vertices;
-	deque<Vertex*> revpost;
-	vector<int> id;
-	int count = 0;
+	deque<Vertex*> revpost; // for문 편의상 stack대신 deque 사용
+	vector<int> componentIds;
+	int componentCount = 0;
 
 	// 	void TopologicalSortHelper(Vertex* v)
-	void ReversePostorderDFS(Vertex* v)
+	void ReversePostorderDFS(Vertex* pSrc)
 	{
-		// TODO:
+		pSrc->visited = true;
+
+		for (Vertex* pOutNeighbor : pSrc->out_neighbors)
+		{
+			if (pOutNeighbor->visited == false)
+			{
+				ReversePostorderDFS(pOutNeighbor);
+			}
+		}
+
+		revpost.push_front(pSrc);
 	}
 
-	void DFS(Vertex* v)
+	void DFS(Vertex* pSrc)
 	{
-		// TODO:
+		pSrc->visited = true;
+		componentIds[pSrc->value] = componentCount;
+
+		for (Vertex* pOutNeighbor : pSrc->out_neighbors)
+		{
+			if (pOutNeighbor->visited == false)
+			{
+				DFS(pOutNeighbor);
+			}
+		}
 	}
 
 	// ReversePostorderDFS()도 깊이우선탐색이라서 DSF()와 합칠 수 있으나
