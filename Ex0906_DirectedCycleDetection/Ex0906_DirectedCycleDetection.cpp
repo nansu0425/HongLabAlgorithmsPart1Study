@@ -100,16 +100,23 @@ public:
 				return;
 			else if (!w->visited)
 			{
-				// TODO: prev[TODO] = TODO; // Kevin Bacon 예제 복습
-
+				prev[w->index] = v; // Kevin Bacon 예제 복습
 				DetectCycle(w);
 			}
-			//else if ( TODO ) // 싸이클 발견!
-			//{
-			//	cout << "Cycle detected: " << w->index << endl;
+			else if (on_stack[w->index] == true) // 싸이클 발견!
+			{
+				cout << "Cycle detected: " << w->index << endl;
 
-			//	// TODO: 싸이클 저장, 이것도 Kevin Bacon 예제 복습
-			//}
+				// TODO: 싸이클 저장, 이것도 Kevin Bacon 예제 복습
+				cycle.push_back(w);
+
+				for (Vertex* pPrev = v; pPrev != w; pPrev = prev[pPrev->index])
+				{
+					cycle.push_back(pPrev);
+				}
+
+				cycle.push_back(w);
+			}
 		}
 
 		on_stack[v->index] = false; // 재귀호출이 곧 끝난다는 것을 표기
