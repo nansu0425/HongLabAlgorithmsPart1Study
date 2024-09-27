@@ -59,24 +59,24 @@ class DijkstraShortestPaths
 public:
 	DijkstraShortestPaths(EdgeWeightedDigraph& g, int s)
 		:
-		prev(g.num_vertices, -1),
-		dist(g.num_vertices, numeric_limits<double>::infinity()), // 일단 전부 무한대 거리로 초기화
-		visited(g.num_vertices, false)
+		m_prevTable(g.num_vertices, -1),
+		m_distTable(g.num_vertices, numeric_limits<double>::infinity()), // 일단 전부 무한대 거리로 초기화
+		m_visitTable(g.num_vertices, false)
 	{
-		dist[s] = 0.0; // 자기자신과의 거리는 0
+		m_distTable[s] = 0.0; // 자기자신과의 거리는 0
 
-		pq.push(pair<double, int>{ 0.0, s }); // {dist, vertex index} 우선순위 큐라서 dist가 필요
+		m_priorityQueue.push(pair<double, int>{ 0.0, s }); // {dist, vertex index} 우선순위 큐라서 dist가 필요
 
-		PrintIndex(dist);
-		PrintDist(dist);
+		PrintIndex(m_distTable);
+		PrintDist(m_distTable);
 
-		while (!pq.empty())
+		while (!m_priorityQueue.empty())
 		{
-			int v = pq.top().second; // pair<double, int> 중에서 int 부분
-			pq.pop();
+			int v = m_priorityQueue.top().second; // pair<double, int> 중에서 int 부분
+			m_priorityQueue.pop();
 
-			if (visited[v]) continue; // 중복 방문 방지
-			visited[v] = true;
+			if (m_visitTable[v]) continue; // 중복 방문 방지
+			m_visitTable[v] = true;
 
 			Relax(g, v);
 		}
@@ -88,9 +88,22 @@ public:
 	// 정답을 한 번에 찾는 방식이 아니라 반복(iteration)하면서 
 	// 제약 조건을 조금씩 완화시켜간다는 표현입니다.
 
-	void Relax(EdgeWeightedDigraph& g, int v)
+	void Relax(EdgeWeightedDigraph& g, int src)
 	{
-		// TODO:
+		for (const DirectedEdge& adjEdge : g.adj[src])
+		{
+			const int dest = adjEdge.w;
+			const double dist = m_distTable[src] + adjEdge.weight;
+
+			if (dist < m_distTable[dest])
+			{
+				m_priorityQueue.push(std::pair<double, int>(dist, dest));
+				m_distTable[dest] = dist;
+				m_prevTable[dest] = src;
+			}
+		}
+
+		PrintDist(m_distTable);
 	}
 
 	void PrintIndex(vector<double>& dist)
@@ -112,14 +125,47 @@ public:
 	void PrintPaths()
 	{
 		// TODO: prev 이용
+		vector<int> path(m_prevTable.size());
+
+		for (int dest = 0; dest < m_prevTable.size(); ++dest)
+		{
+			path.clear();
+			path.push_back(dest);
+
+			int prev = m_prevTable[dest];
+
+			// dest까지의 경로 저장
+			while (prev != -1)
+			{
+				path.push_back(prev);
+				prev = m_prevTable[prev];
+			}
+
+			// 경로 출력
+			while (true)
+			{
+				int vertex = path.back();
+				path.pop_back();
+
+				std::cout << vertex;
+
+				if (path.empty() == true)
+				{
+					std::cout << std::endl;
+					break;
+				}
+
+				std::cout << " -> ";
+			}
+		}
 	}
 
 private:
-	vector<int> prev;     // 최단 경로 기록
-	vector<double> dist;  // 거리 기록
-	vector<bool> visited; // 방문했는지 기록
+	vector<int>		m_prevTable;	// 최단 경로 기록
+	vector<double>	m_distTable;	// 거리 기록
+	vector<bool>	m_visitTable;	// 방문했는지 기록
 
-	priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> pq;
+	priority_queue<pair<double, int>, vector<pair<double, int>>, greater<pair<double, int>>> m_priorityQueue;
 };
 
 int main()
