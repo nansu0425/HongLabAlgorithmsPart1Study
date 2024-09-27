@@ -59,20 +59,20 @@ class DijkstraShortestPaths
 public:
 	DijkstraShortestPaths(EdgeWeightedDigraph& g, int s)
 		:
-		prev(g.num_vertices, -1),
-		dist(g.num_vertices, numeric_limits<double>::infinity()), // 일단 전부 무한대 거리로 초기화
-		pq(g.num_vertices)
+		m_prevTable(g.num_vertices, -1),
+		m_distTable(g.num_vertices, numeric_limits<double>::infinity()), // 일단 전부 무한대 거리로 초기화
+		m_priorityQueue(g.num_vertices)
 	{
-		dist[s] = 0.0; // 자기자신과의 거리는 0
+		m_distTable[s] = 0.0; // 자기자신과의 거리는 0
 
-		pq.Insert(s, dist[s]);
+		m_priorityQueue.Insert(s, m_distTable[s]);
 
-		PrintIndex(dist);
-		PrintDist(dist);
+		PrintIndex(m_distTable);
+		PrintDist(m_distTable);
 
-		while (!pq.Empty())
+		while (!m_priorityQueue.Empty())
 		{
-			Relax(g, pq.DelMin());
+			Relax(g, m_priorityQueue.DelMin());
 		}
 
 		PrintPaths(); // 최단 경로 출력
@@ -82,31 +82,38 @@ public:
 	// 정답을 한 번에 찾는 방식이 아니라 반복(iteration)하면서 
 	// 제약 조건을 조금씩 완화시켜간다는 표현입니다.
 
-	void Relax(EdgeWeightedDigraph& g, int v)
+	void Relax(EdgeWeightedDigraph& g, int src)
 	{
-		cout << v << endl;
+		cout << src << endl;
 
 		// 인접 edge들 중에서 가장 가까운 것을 이용해서 업데이트
-/*
-		for ( TODO )
+
+		for (DirectedEdge adjEdge : g.adj[src])
 		{
 			// dist[v]: s에서 v까지 오기 위해 현재까지 발견된 최소거리 경로
 			// v에서 다시 w로 이동할 경우 dist 업데이트
 
-			int w = TODO;
+			int dest = adjEdge.To();
+			double new_dist = m_distTable[src] + adjEdge.Weight();
 
-			double new_dist = TODO;
-			if ( TODO ) // w까지 오는 새로운 최단 경로 발견
+			if (new_dist < m_distTable[dest]) // w까지 오는 새로운 최단 경로 발견
 			{
-				dist[w] = TODO;
-
-				prev[w] = TODO; // 최단 경로 기록
+				m_distTable[dest] = new_dist;
+				m_prevTable[dest] = src; // 최단 경로 기록
 
 				//TODO: pq 사용
+				if (m_priorityQueue.Contains(dest))
+				{
+					m_priorityQueue.DecreaseKey(dest, new_dist);
+				}
+				else
+				{
+					m_priorityQueue.Insert(dest, new_dist);
+				}
 			}
 		}
-*/
-		PrintDist(dist);
+
+		PrintDist(m_distTable);
 	}
 
 	void PrintIndex(vector<double>& dist)
@@ -128,13 +135,46 @@ public:
 	void PrintPaths()
 	{
 		// TODO: prev 이용
+
+		vector<int> path(m_prevTable.size());
+
+		for (int dest = 0; dest < m_prevTable.size(); ++dest)
+		{
+			path.clear();
+			path.push_back(dest);
+
+			int prev = m_prevTable[dest];
+
+			// dest까지의 경로 저장
+			while (prev != -1)
+			{
+				path.push_back(prev);
+				prev = m_prevTable[prev];
+			}
+			
+			// 경로 출력
+			while (true)
+			{
+				int vertex = path.back();
+				path.pop_back();
+
+				std::cout << vertex;
+
+				if (path.empty() == true)
+				{
+					std::cout << std::endl;
+					break;
+				}
+
+				std::cout << " -> ";
+			}
+		}
 	}
 
 private:
-	vector<int> prev;     // 최단 경로 기록
-	vector<double> dist;  // 거리 기록
-
-	IndexMinPQ<double> pq;
+	vector<int>			m_prevTable;     // 최단 경로 기록
+	vector<double>		m_distTable;  // 거리 기록
+	IndexMinPQ<double>	m_priorityQueue;
 };
 
 int main()
