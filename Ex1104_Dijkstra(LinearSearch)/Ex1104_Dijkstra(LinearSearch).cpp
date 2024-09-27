@@ -59,14 +59,14 @@ class DijkstraShortestPaths
 public:
 	DijkstraShortestPaths(EdgeWeightedDigraph& g, int s)
 		:
-		prev(g.num_vertices, -1),
-		dist(g.num_vertices, numeric_limits<double>::infinity()), // 일단 전부 무한대 거리로 초기화
-		visited(g.num_vertices, false)
+		m_prevTable(g.num_vertices, -1),
+		m_distTable(g.num_vertices, numeric_limits<double>::infinity()), // 일단 전부 무한대 거리로 초기화
+		m_visitTable(g.num_vertices, false)
 	{
-		dist[s] = 0.0; // 자기자신과의 거리는 0
+		m_distTable[s] = 0.0; // 자기자신과의 거리는 0
 
-		PrintIndex(dist);
-		PrintDist(dist);
+		PrintIndex(m_distTable);
+		PrintDist(m_distTable);
 
 		while (true)
 		{
@@ -76,7 +76,7 @@ public:
 
 			cout << "Visit " << v << endl;
 
-			visited[v] = true;
+			m_visitTable[v] = true;
 
 			Relax(g, v);
 		}
@@ -87,20 +87,54 @@ public:
 	int FindMinVertex()
 	{
 		//TODO: 아직 방문하지 않은 정점들 중에서 dist가 가장 작은 것의 인덱스를 반환
+		int minVertex = -1;
 
-		return -1;
+		for (int vertex = 0; vertex < m_visitTable.size(); ++vertex)
+		{
+			if (m_visitTable[vertex] == false)
+			{
+				minVertex = vertex;
+				break;
+			}
+		}
+
+		if (minVertex == -1)
+		{
+			return -1;
+		}
+
+		for (int vertex = minVertex + 1; vertex < m_visitTable.size(); ++vertex)
+		{
+			if ((m_visitTable[vertex] == false) &&
+				(m_distTable[minVertex] > m_distTable[vertex]))
+			{
+				minVertex = vertex;
+			}
+		}
+
+		return minVertex;
 	}
 
 	// 여기서 Relax는 점점 긴장을 풀어간다는 의미입니다.
 	// 정답을 한 번에 찾는 방식이 아니라 반복(iteration)하면서 
 	// 제약 조건을 조금씩 완화시켜간다는 표현입니다.
-	void Relax(EdgeWeightedDigraph& g, int v)
+	void Relax(EdgeWeightedDigraph& g, int src)
 	{
-		cout << v << endl;
+		cout << src << endl;
 
-		//TODO: 
+		for (const DirectedEdge& adjEdge : g.adj[src])
+		{
+			double dist = m_distTable[src] + adjEdge.weight;
+			const int dest = adjEdge.w;
 
-		PrintDist(dist);
+			if (dist < m_distTable[dest])
+			{
+				m_distTable[dest] = dist;
+				m_prevTable[dest] = src;
+			}
+		}
+
+		PrintDist(m_distTable);
 	}
 
 	void PrintIndex(vector<double>& dist)
@@ -122,12 +156,45 @@ public:
 	void PrintPaths()
 	{
 		// TODO: prev 이용
+		vector<int> path(m_prevTable.size());
+
+		for (int dest = 0; dest < m_prevTable.size(); ++dest)
+		{
+			path.clear();
+			path.push_back(dest);
+
+			int prev = m_prevTable[dest];
+
+			// dest까지의 경로 저장
+			while (prev != -1)
+			{
+				path.push_back(prev);
+				prev = m_prevTable[prev];
+			}
+
+			// 경로 출력
+			while (true)
+			{
+				int vertex = path.back();
+				path.pop_back();
+
+				std::cout << vertex;
+
+				if (path.empty() == true)
+				{
+					std::cout << std::endl;
+					break;
+				}
+
+				std::cout << " -> ";
+			}
+		}
 	}
 
 private:
-	vector<int> prev;     // 최단 경로 기록
-	vector<double> dist;  // 거리 기록
-	vector<bool> visited; // 방문했는지 기록
+	vector<int>		m_prevTable;	// 최단 경로 기록
+	vector<double>	m_distTable;	// 거리 기록
+	vector<bool>	m_visitTable;	// 방문했는지 기록
 };
 
 int main()
