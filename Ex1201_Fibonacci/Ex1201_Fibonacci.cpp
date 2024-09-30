@@ -16,7 +16,12 @@ int RecurFibonacci(int n)
 // 메모에 vector 대신에 unordered_map을 사용하는 경우도 있습니다.
 int MemoizedTopDownFibonacciHelper(int n, std::vector<int>& memo)
 {
-	// TODO:
+	if (n < 2)
+	{
+		return memo[n];
+	}
+
+	memo[n] = MemoizedTopDownFibonacciHelper(n - 1, memo) + memo[n - 2];
 
 	for (auto& t : memo) cout << setw(4) << t; cout << endl;
 
@@ -41,9 +46,9 @@ int BottomUpFibonacciTabulation(int n)
 	table[0] = 0;
 	table[1] = 1;
 
-	// for ( TODO )
+	for (int tableIdx = 2; tableIdx <= n; ++tableIdx)
 	{
-		// TODO:
+		table[tableIdx] = table[tableIdx - 1] + table[tableIdx - 2];
 
 		for (auto& t : table) cout << setw(4) << t; cout << endl;
 	}
@@ -60,7 +65,12 @@ int BottomUpFibonacci(int n)
 	int a = 0;
 	int b = 1;
 
-	// TODO:
+	for (int nthFiboNum = 2; nthFiboNum <= n; ++nthFiboNum)
+	{
+		int oldB = b;
+		b += a;
+		a = oldB;
+	}
 
 	return b; // The N-th Fibonacci number
 }
