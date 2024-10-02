@@ -9,38 +9,35 @@ using namespace std;
 string RecurLCS(const string& X, const string& Y, int m, int n)
 {
 	if (m == 0 || n == 0)
+	{
 		return string("");
+	}
 
-	/*
+	// 마지막 문자가 같은 경우
 	if (X[m - 1] == Y[n - 1])
 	{
-		return TODO:
+		return RecurLCS(X, Y, m - 1, n - 1) + X[m - 1];
 	}
-	else
-	{
-		string s1 = TODO:
-		string s2 = TODO:
+	
+	string s1 = RecurLCS(X, Y, m - 1, n);
+	string s2 = RecurLCS(X, Y, m, n - 1);
 
-		return s1.size() >= s2.size() ? s1 : s2;
-	}
-	*/
-
-	return string(""); // TODO: 불필요, 삭제
+	return (s1.size() >= s2.size()) ? s1 : s2;
 }
 
 int RecurLengthLCS(const string& X, const string& Y, int m, int n)
 {
 	if (m == 0 || n == 0)
+	{
 		return 0;
+	}
 
-	/*
 	if (X[m - 1] == Y[n - 1])
-		return TODO
-	else
-		return max(TODO, TODO);
-	*/
-
-	return 0; // TODO: 불필요, 삭제
+	{
+		return RecurLengthLCS(X, Y, m - 1, n - 1) + 1;
+	}
+	
+	return max(RecurLengthLCS(X, Y, m - 1, n), RecurLengthLCS(X, Y, m, n - 1));
 }
 
 void PrintLCS(const vector<vector<char>>& prev, const string& X, int i, int j)
@@ -72,75 +69,77 @@ int BottomUpLCS(const string& X, const string& Y, int m, int n)
 
 	// 문제풀이할때는 보통 table 채워서 최대 길이를 찾는 것이 목표입니다.
 	// 추가적으로 prev와 lcs를 제공하는 이유는 이해를 돕기 위해서 입니다.
-	vector<vector<int>> table(m + 1, vector<int>(n + 1, 0));
-	vector<vector<char>> prev(m + 1, vector<char>(n + 1, ' '));
+	vector<vector<int>> lcsLenTable(m + 1, vector<int>(n + 1, 0));
+	vector<vector<char>> prevTable(m + 1, vector<char>(n + 1, ' '));
 
-	vector<vector<string>> lcs(m + 1, vector<string>(n + 1, ""));
+	vector<vector<string>> lcsTable(m + 1, vector<string>(n + 1, ""));
 	// prev에는 강의 노트의 화살표를 문자로 저장, PrintLCS() 참고
 
 	// 여기서 i, j는 X와 Y의 길이를 의미 (1-base)
-	for (int i = 1; i <= m; i++)
+	for (int lenX = 1; lenX <= m; lenX++)
 	{
-		for (int j = 1; j <= n; j++)
+		for (int lenY = 1; lenY <= n; lenY++)
 		{
-			/*
-			if (X[i - 1] == Y[j - 1]) // 주의: i - 1, j - 1
+			// 마지막 글자가 같은 경우
+			if (X[lenX - 1] == Y[lenY - 1]) // 주의: i - 1, j - 1
 			{
-				table[i][j] = TODO;
+				lcsLenTable[lenX][lenY] = lcsLenTable[lenX - 1][lenY - 1] + 1;
 
-				prev[i][j] = '\\'; // [i-1][j-1]에서 가져왔다는 의미
-				lcs[i][j] = TODO;
+				prevTable[lenX][lenY] = '\\'; // [lenX - 1][lenY - 1]에서 가져왔다는 의미
+				lcsTable[lenX][lenY] = lcsTable[lenX - 1][lenY - 1] + X[lenX - 1];
 			}
-			else if (table[i - 1][j] >= table[i][j - 1])
+			// 왼쪽 칸과 윗 칸 lcs의 길이가 같거나 윗 칸 lcs가 더 긴 경우
+			else if (lcsLenTable[lenX - 1][lenY] >= lcsLenTable[lenX][lenY - 1])
 			{
-				table[i][j] = TODO;
+				lcsLenTable[lenX][lenY] = lcsLenTable[lenX - 1][lenY];
 
-				prev[i][j] = '|'; // [i-1][j]에서 가져왔다는 의미
-				lcs[i][j] = TODO;
+				prevTable[lenX][lenY] = '|'; // [lenX - 1][lenY]에서 가져왔다는 의미
+				lcsTable[lenX][lenY] = lcsTable[lenX - 1][lenY];
 			}
+			// 왼쪽 칸 lcs의 길이가 더 긴 경우
 			else
 			{
-				table[i][j] = TODO;
+				lcsLenTable[lenX][lenY] = lcsLenTable[lenX][lenY - 1];
 
-				prev[i][j] = '-'; // [i][j-1]에서 가져왔다는 의미
-				lcs[i][j] = TODO;
+				prevTable[lenX][lenY] = '-'; // [lenX][lenY - 1]에서 가져왔다는 의미
+				lcsTable[lenX][lenY] = lcsTable[lenX][lenY - 1];
 			}
-			*/
+			
 		}
 	}
 
 	// 이하 표(tabulation) 확인용
 
-	cout << table[m][n] << endl;
+	cout << lcsLenTable[m][n] << endl;
 	for (int i = 1; i <= m; i++)
 	{
 		for (int j = 1; j <= n; j++)
-			cout << left << setw(3) << table[i][j];
+			cout << left << setw(3) << lcsLenTable[i][j];
 		cout << endl;
 	}
 	cout << endl;
 
-	cout << lcs[m][n] << endl;
+	cout << lcsTable[m][n] << endl;
 	for (int i = 1; i <= m; i++)
 	{
 		for (int j = 1; j <= n; j++)
-			cout << setw(min(X.length(), Y.length())) << lcs[i][j];
+			cout << setw(min(X.length(), Y.length())) << lcsTable[i][j];
 		cout << endl;
 	}
 	cout << endl;
 
-	PrintLCS(prev, X, m, n);
+	PrintLCS(prevTable, X, m, n);
 	cout << endl;
 
 	for (int i = 1; i <= m; i++)
 	{
 		for (int j = 1; j <= n; j++)
-			cout << setw(3) << prev[i][j];
+			cout << setw(3) << prevTable[i][j];
 		cout << endl;
 	}
 	cout << endl;
 
-	return table[m][n]; // 결과
+	return lcsLenTable[m][n]; // 결과
 }
 
 int main()
