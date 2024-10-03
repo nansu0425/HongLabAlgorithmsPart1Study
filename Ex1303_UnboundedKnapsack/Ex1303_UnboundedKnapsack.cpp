@@ -14,60 +14,62 @@ void Print(const vector<T>& items)
 	cout << endl;
 }
 
-int RecurUnboundedKnapsack(vector<int> weights, vector<int> values, int W, int n)
+//  무게 제한이 limitWeight일 때 1 ~ maxItem까지 고려한 최대 가치
+int RecurUnboundedKnapsack(const vector<int>& weightTable, const vector<int>& valueTable, int limitWeight, int maxItem)
 {
 	// RecurZeroOneKnapsack()와 동일한 코드입니다.
 	// Unbounded 버전으로 수정해보세요.
-	// 힌트: n 번째 아이템을 여러 번 넣을 수 있다.
+	// 힌트: maxItem을 여러 번 넣을 수 있다.
 
-	cout << "W = " << W << ", n = " << n << endl;
+	cout << "limitWeight = " << limitWeight << ", maxItem = " << maxItem << endl;
 
-	if (n == 0 || W == 0)
+	if (maxItem == 0 || limitWeight == 0)
 	{
 		return 0;
 	}
 
-	if (weights[n - 1] > W)
+	if (weightTable[maxItem - 1] > limitWeight)
 	{
-		return RecurUnboundedKnapsack(weights, values, W, n - 1);
+		return RecurUnboundedKnapsack(weightTable, valueTable, limitWeight, maxItem - 1);
 	}
-	else
-	{
-		return max(
-			RecurUnboundedKnapsack(weights, values, W, n - 1), // Case 1
-			RecurUnboundedKnapsack(weights, values, W - weights[n - 1], n - 1) + values[n - 1] // Case 2
-		);
-	}
+	
+	
+	return max(RecurUnboundedKnapsack(weightTable, valueTable, limitWeight, maxItem - 1), // maxItem 넣지 않는 경우
+			   RecurUnboundedKnapsack(weightTable, valueTable, limitWeight - weightTable[maxItem - 1], maxItem) + valueTable[maxItem - 1]); // maxItem 넣는 경우
+	
 }
 
 // ZeroOneKnapsack()을 아주 약간만 수정한 버전
-int BottomUpUnboundedKnapsack1(vector<int> weights, vector<int> values, int W)
+int BottomUpUnboundedKnapsack1(vector<int> weightTable, vector<int> valueTable, int maxLimitWeight)
 {
-	vector<vector<int> > table(W + 1, vector<int>(weights.size() + 1, 0)); // 모두 0으로 초기화 (아래 루프에서 w = 0 또는 n = 0인 경우 없음)
-	vector<vector<vector<int>>> items(W + 1, vector<vector<int>>(weights.size() + 1, vector<int>(weights.size(), 0)));
+	vector<vector<int>> maxValueTable(maxLimitWeight + 1, vector<int>(weightTable.size() + 1, 0)); // 모두 0으로 초기화 (아래 루프에서 w = 0 또는 n = 0인 경우 없음)
+	vector<vector<vector<int>>> itemCntTable(maxLimitWeight + 1, vector<vector<int>>(weightTable.size() + 1, vector<int>(weightTable.size(), 0)));
 
-	for (int w = 1; w <= W; w++)
+	for (int limitWeight = 1; limitWeight <= maxLimitWeight; limitWeight++)
 	{
-		for (int n = 1; n <= weights.size(); n++)
+		for (int maxItem = 1; maxItem <= weightTable.size(); maxItem++)
 		{
-			if (weights[n - 1] > w) // 아이템 n의 무게가 넣을 수 있는 무게인지
+			// maxItem이 한계 무게를 초과하는 경우 maxItem을 제외
+			if (weightTable[maxItem - 1] > limitWeight)
 			{
-				table[w][n] = table[w][n - 1];
-				items[w][n] = items[w][n - 1];
+				maxValueTable[limitWeight][maxItem] = maxValueTable[limitWeight][maxItem - 1];
+				itemCntTable[limitWeight][maxItem] = itemCntTable[limitWeight][maxItem - 1];
 			}
 			else
 			{
-				// TODO: 아래는 ZeroOneKnapsack()와 동일합니다. 재귀버전과 비슷하게 수정해보세요.
-				if (table[w][n - 1] > table[w - weights[n - 1]][n - 1] + values[n - 1])
+				const int valueIncludingMaxItem = maxValueTable[limitWeight - weightTable[maxItem - 1]][maxItem] + valueTable[maxItem - 1];
+
+				// maxItem을 포함하지 않은 가치가 maxItem을 포함한 가치보다 더 높은 경우
+				if (maxValueTable[limitWeight][maxItem - 1] > valueIncludingMaxItem)
 				{
-					table[w][n] = table[w][n - 1];
-					items[w][n] = items[w][n - 1];
+					maxValueTable[limitWeight][maxItem] = maxValueTable[limitWeight][maxItem - 1];
+					itemCntTable[limitWeight][maxItem] = itemCntTable[limitWeight][maxItem - 1];
 				}
 				else
 				{
-					table[w][n] = table[w - weights[n - 1]][n - 1] + values[n - 1];
-					items[w][n] = items[w - weights[n - 1]][n - 1];
-					items[w][n][n - 1] += 1;
+					maxValueTable[limitWeight][maxItem] = valueIncludingMaxItem;
+					itemCntTable[limitWeight][maxItem] = itemCntTable[limitWeight - weightTable[maxItem - 1]][maxItem];
+					itemCntTable[limitWeight][maxItem][maxItem - 1] += 1;
 				}
 			}
 		}
@@ -75,28 +77,28 @@ int BottomUpUnboundedKnapsack1(vector<int> weights, vector<int> values, int W)
 
 	using std::cout;
 
-	cout << table[W][weights.size()] << endl;
-	for (int i = 0; i <= weights.size(); i++)
+	cout << maxValueTable[maxLimitWeight][weightTable.size()] << endl;
+	for (int i = 0; i <= weightTable.size(); i++)
 	{
 		cout << i << ": ";
-		for (int w = 0; w <= W; w++)
-			cout << right << setw(4) << table[w][i];
+		for (int w = 0; w <= maxLimitWeight; w++)
+			cout << right << setw(4) << maxValueTable[w][i];
 		cout << endl;
 	}
 	cout << endl;
 
 	cout << "Weight:";
-	for (int w = 0; w <= W; w++)
+	for (int w = 0; w <= maxLimitWeight; w++)
 		cout << right << setw(4) << w;
 	cout << endl << endl;
 
 	cout << "Items count" << endl;
-	for (int i = 0; i <= weights.size(); i++)
+	for (int i = 0; i <= weightTable.size(); i++)
 	{
 		cout << "Item " << i << ": ";
-		for (int w = 0; w <= W; w++) {
-			for (int j = 0; j < weights.size(); j++)
-				cout << items[w][i][j];
+		for (int w = 0; w <= maxLimitWeight; w++) {
+			for (int j = 0; j < weightTable.size(); j++)
+				cout << itemCntTable[w][i][j];
 			cout << " ";
 		}
 		cout << endl;
@@ -104,12 +106,12 @@ int BottomUpUnboundedKnapsack1(vector<int> weights, vector<int> values, int W)
 	cout << endl;
 
 	cout << "Values per item" << endl;
-	for (int i = 0; i <= weights.size(); i++)
+	for (int i = 0; i <= weightTable.size(); i++)
 	{
 		cout << "Item " << i << ": ";
-		for (int w = 0; w <= W; w++) {
-			for (int j = 0; j < weights.size(); j++)
-				cout << items[w][i][j] * values[j];
+		for (int w = 0; w <= maxLimitWeight; w++) {
+			for (int j = 0; j < weightTable.size(); j++)
+				cout << itemCntTable[w][i][j] * valueTable[j];
 			cout << " ";
 		}
 		cout << endl;
@@ -117,88 +119,96 @@ int BottomUpUnboundedKnapsack1(vector<int> weights, vector<int> values, int W)
 	cout << endl;
 
 	cout << "Weights per item" << endl;
-	for (int i = 0; i <= weights.size(); i++)
+	for (int i = 0; i <= weightTable.size(); i++)
 	{
 		cout << "Item " << i << ": ";
-		for (int w = 0; w <= W; w++) {
-			for (int j = 0; j < weights.size(); j++)
-				cout << items[w][i][j] * weights[j];
+		for (int w = 0; w <= maxLimitWeight; w++) {
+			for (int j = 0; j < weightTable.size(); j++)
+				cout << itemCntTable[w][i][j] * weightTable[j];
 			cout << " ";
 		}
 		cout << endl;
 	}
 	cout << endl;
 
-	return table[W][weights.size()];
+	return maxValueTable[maxLimitWeight][weightTable.size()];
 }
 
-int BottomUpUnboundedKnapsack2(vector<int> weights, vector<int> values, int W)
+int BottomUpUnboundedKnapsack2(vector<int> weightTable, vector<int> valueTable, int maxLimitWeight)
 {
-	vector<int> table(W + 1, 0); // 1차원 배열 (ZeroOne에서는 2차원)
+	vector<int> maxValueTable(maxLimitWeight + 1, 0); // 1차원 배열 (ZeroOne에서는 2차원)
+	vector<vector<int>> itemCntTable(maxLimitWeight + 1, vector<int>(weightTable.size(), 0));
 
-	vector<vector<int>> items(W + 1, vector<int>(weights.size(), 0));
-
-	for (int w = 1; w <= W; w++)
+	for (int limitWeight = 1; limitWeight <= maxLimitWeight; limitWeight++)
 	{
-		for (int n = 1; n <= weights.size(); n++)
+		for (int maxItem = 1; maxItem <= weightTable.size(); maxItem++)
 		{
-			if (weights[n - 1] <= w)
+			// maxItem을 포함시킬 수 있는 경우
+			if (weightTable[maxItem - 1] <= limitWeight)
 			{
-				// TODO:
+				const int valueIncludingMaxItem = maxValueTable[limitWeight - weightTable[maxItem - 1]] + valueTable[maxItem - 1];
+
+				// maxItem을 포함한 가치가 더 큰 경우
+				if (maxValueTable[limitWeight] < valueIncludingMaxItem)
+				{
+					maxValueTable[limitWeight] = valueIncludingMaxItem;
+					itemCntTable[limitWeight] = itemCntTable[limitWeight - weightTable[maxItem - 1]];
+					++itemCntTable[limitWeight][maxItem - 1];
+				}
 			}
 		}
 
-		cout << "Weight " << setw(2) << w << ", " << "Value " << setw(2) << table[w] << ", items: ";
-		Print(items[w]);
+		cout << "Weight " << setw(2) << limitWeight << ", " << "Value " << setw(2) << maxValueTable[limitWeight] << ", items: ";
+		Print(itemCntTable[limitWeight]);
 	}
 
 	cout << "Items  : ";
-	Print(items[W]);
+	Print(itemCntTable[maxLimitWeight]);
 	int wsum = 0, vsum = 0;
-	for (int i = 0; i < weights.size(); i++)
+	for (int i = 0; i < weightTable.size(); i++)
 	{
-		wsum += weights[i] * items[W][i];
-		vsum += values[i] * items[W][i];
+		wsum += weightTable[i] * itemCntTable[maxLimitWeight][i];
+		vsum += valueTable[i] * itemCntTable[maxLimitWeight][i];
 	}
 	cout << wsum << " " << vsum << endl;
 
-	return table[W]; // W만큼 채웠을 때 가격의 합
+	return maxValueTable[maxLimitWeight]; // W만큼 채웠을 때 가격의 합
 }
 
 int main()
 {
-	//int W = 20; // 30
-	//vector<int> weights = { 1, 2, 3 };
-	//vector<int> values = { 1, 3, 2 };
+	//int limitWeight = 20; // 30
+	// vector<int> weightTable = { 1, 2, 3 };
+	// vector<int> valueTable = { 1, 3, 2 };
 
-	int W = 10; // 42
-	vector<int> weights = { 6, 2,  4,  3, 11 };
-	vector<int> values = { 20, 8, 14, 13, 35 };
+	int limitWeight = 10; // 42
+	vector<int> weightTable = { 6, 2,  4,  3, 11 };
+	vector<int> valueTable = { 20, 8, 14, 13, 35 };
 
 	{
 		cout << "Brute-force Recursion" << endl;
-		cout << "W = " << W << endl;
-		cout << "Weights: ";
-		Print(weights);
-		cout << "Values : ";
-		Print(values);
-		vector<int> result(weights.size(), 0);
-		cout << RecurUnboundedKnapsack(weights, values, W, int(weights.size())) << endl;
+		cout << "limitWeight = " << limitWeight << endl;
+		cout << "weightTable: ";
+		Print(weightTable);
+		cout << "valueTable : ";
+		Print(valueTable);
+		vector<int> result(weightTable.size(), 0);
+		cout << RecurUnboundedKnapsack(weightTable, valueTable, limitWeight, int(weightTable.size())) << endl;
 		cout << endl;
 	}
 
 	{
 		cout << "Bottom-up Tabulation" << endl;
-		cout << "W = " << W << endl;
-		cout << "Weights: ";
-		Print(weights);
-		cout << "Values : ";
-		Print(values);
+		cout << "limitWeight = " << limitWeight << endl;
+		cout << "weightTable: ";
+		Print(weightTable);
+		cout << "valueTable : ";
+		Print(valueTable);
 
-		cout << BottomUpUnboundedKnapsack1(weights, values, W) << endl;
+		cout << BottomUpUnboundedKnapsack1(weightTable, valueTable, limitWeight) << endl;
 		cout << endl;
 
-		cout << BottomUpUnboundedKnapsack2(weights, values, W) << endl;
+		cout << BottomUpUnboundedKnapsack2(weightTable, valueTable, limitWeight) << endl;
 		cout << endl;
 	}
 
