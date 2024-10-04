@@ -5,17 +5,17 @@ using namespace std;
 int main()
 {
 	UnionFind uf(4);
-	vector<pair<int, int>> tests =
+	vector<pair<int, int>> testPairs =
 	{
 		{0, 1}, {1, 2}, {2, 3}, {3, 0}
 	};
 
 	uf.Print();
 
-	for (auto t : tests)
+	for (const auto& pair : testPairs)
 	{
-		int u = t.first;
-		int v = t.second;
+		int u = pair.first;
+		int v = pair.second;
 		bool connected = uf.Connected(u, v);  // uf.Find(p) == uf.Find(q);
 
 		cout << u << " " << v << " " << std::boolalpha << connected << endl;

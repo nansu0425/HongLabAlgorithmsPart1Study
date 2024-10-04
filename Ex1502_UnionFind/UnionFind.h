@@ -9,19 +9,22 @@ using namespace std; // 편의용
 class UnionFind
 {
 public:
-	vector<int> group;
-	int num_groups;
+	vector<int> m_groupTable;
+	int m_numGroups;
 
-	UnionFind(int N)
-		: group(N), num_groups(N)
+	UnionFind(int numGroups)
+		: m_groupTable(numGroups)
+		, m_numGroups(numGroups)
 	{
-		for (int i = 0; i < group.size(); i++)
-			group[i] = i;
+		for (int elem = 0; elem < m_groupTable.size(); elem++)
+		{
+			m_groupTable[elem] = elem;
+		}
 	}
 
 	int NumGroups()
 	{
-		return num_groups;
+		return m_numGroups;
 	}
 
 	bool Connected(int p, int q)
@@ -30,61 +33,70 @@ public:
 	}
 
 	/* Quick-Find 방식: Union()에서 미리 정리하기 때문에 Find()는 빠름 */
-	int Find(int p)
+	/*int Find(int p)
 	{
-		return group[p];
+		return m_groupTable[p];
 	}
 
-	void Union(int p, int q)
+	void Union(int first, int second)
 	{
-		int pid = Find(p);
-		int qid = Find(q);
+		int groupFirst = Find(first);
+		int groupSecond = Find(second);
 
-		if (pid == qid) return;
-
-		for (int i = 0; i < group.size(); i++)
+		if (groupFirst == groupSecond) 
 		{
-			// TODO:
+			return;
 		}
 
-		num_groups--;
-	}
+		for (int elem = 0; elem < m_groupTable.size(); elem++)
+		{
+			if (m_groupTable[elem] == groupFirst)
+			{
+				m_groupTable[elem] = groupSecond;
+			}
+		}
+
+		m_numGroups--;
+	}*/
 
 	/* Quick-Union 방식: Union()은 빠르고 Find()할 때 정리 */
-	/*
-	int Find(int p)
+	
+	int Find(int elem)
 	{
-		while (p != group[p])
+		while (elem != m_groupTable[elem])
 		{
-			// TODO:
+			elem = m_groupTable[elem];
 		}
 
-		return p;
+		return elem;
 	}
 
-	void Union(int p, int q)
+	void Union(int firstElem, int secondElem)
 	{
-		int i = Find(p);
-		int j = Find(q);
-		if (i == j) return;
+		int groupFirst = Find(firstElem);
+		int groupSecond = Find(secondElem);
 
-		group[i] = j;
+		if (groupFirst == groupSecond) 
+		{
+			return;
+		}
 
-		num_groups--;
+		m_groupTable[groupFirst] = groupSecond;
+		m_numGroups--;
 	}
-	*/
+	
 
 	void Print()
 	{
 		cout << "Num groups = " << NumGroups() << endl;
 
 		cout << "Index:";
-		for (int i = 0; i < group.size(); i++)
+		for (int i = 0; i < m_groupTable.size(); i++)
 			cout << setw(3) << i;
 		cout << endl;
 
 		cout << "Group:";
-		for (auto i : group)
+		for (auto i : m_groupTable)
 			cout << setw(3) << i;
 		cout << endl;
 	}
