@@ -6,19 +6,18 @@ using namespace std;
 
 struct Node
 {
-	string data; // char보다 디버깅 편리
+	string ch; // char보다 디버깅 편리
 	int freq;
-	Node* left = nullptr;
-	Node* right = nullptr;
+	Node* pLeft = nullptr;
+	Node* pRight = nullptr;
 };
 
 // std::priority_queue에서 사용할 MinHeapNode의 비교
 struct Compare
 {
-	bool operator()(Node* l, Node* r)
+	bool operator()(Node* pLeft, Node* pRight)
 	{
-		// TODO:
-		return false;
+		return pLeft->freq > pRight->freq;
 	}
 };
 
@@ -27,43 +26,51 @@ void PrintCodes(Node* root, string str)
 	if (!root)
 		return;
 
-	if (!root->left && !root->right) // leaf node이면 출력
-		cout << root->data << ": " << str << "\n";
+	if (!root->pLeft && !root->pRight) // leaf node이면 출력
+		cout << root->ch << ": " << str << "\n";
 
-	PrintCodes(root->left, str + "0");
-	PrintCodes(root->right, str + "1");
+	PrintCodes(root->pLeft, str + "0");
+	PrintCodes(root->pRight, str + "1");
 }
 
-void HuffmanCoding(vector<char> data, vector<int> freq)
+void HuffmanCoding(vector<char> charTable, vector<int> freqTable)
 {
 	// freq가 작을 수록 우선순위가 높은 힙
 	// struct Compare에서 우선순위 비교
-	priority_queue<Node*, vector<Node*>, Compare> heap;
+	priority_queue<Node*, vector<Node*>, Compare> minFreqPriorityQueue;
 
-	for (int i = 0; i < data.size(); ++i)
-		heap.push(new Node{ string(1, data[i]), freq[i] });
-
-	/*
-	while (heap.size() != 1)
+	for (int charIdx = 0; charIdx < charTable.size(); ++charIdx)
 	{
-		Node* left, * right, * top;
-
-		// TODO:
-
-		cout << "(" << left->data << ", " << left->freq << ") + (" << right->data << ", " << right->freq << ") -> ";
-		cout << "(" << top->data << ", " << top->freq << ")" << endl;
+		minFreqPriorityQueue.push(new Node{ string(1, charTable[charIdx]), freqTable[charIdx] });
 	}
-	*/
+	
+	while (minFreqPriorityQueue.size() > 1)
+	{
+		Node* pLeft = minFreqPriorityQueue.top();
+		minFreqPriorityQueue.pop();
 
-	PrintCodes(heap.top(), "");
+		Node* pRight = minFreqPriorityQueue.top();
+		minFreqPriorityQueue.pop();
+
+		Node* pParent = new Node{pLeft->ch + pRight->ch, 
+								 pLeft->freq + pRight->freq, 
+								 pLeft, 
+								 pRight};
+		minFreqPriorityQueue.push(pParent);
+
+		cout << "(" << pLeft->ch << ", " << pLeft->freq << ") + (" << pRight->ch << ", " << pRight->freq << ") -> ";
+		cout << "(" << pParent->ch << ", " << pParent->freq << ")" << endl;
+	}
+
+	PrintCodes(minFreqPriorityQueue.top(), "");
 }
 
 int main()
 {
-	vector<char> data = { 'a', 'b', 'c', 'd', 'e', 'f' };
-	vector<int> freq = { 45, 13, 12, 16, 9, 5 };
+	vector<char> charTable = { 'a', 'b', 'c', 'd', 'e', 'f' };
+	vector<int> freqTable = { 9, 8, 7, 6, 5, 4};
 
-	HuffmanCoding(data, freq);
+	HuffmanCoding(charTable, freqTable);
 
 	return 0;
 }
