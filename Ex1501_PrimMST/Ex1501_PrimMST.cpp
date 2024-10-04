@@ -4,7 +4,7 @@
 #include "../Ex1102_IndexMinPQ/IndexMinPQ.h"
 using namespace std;
 
-constexpr double kInf = numeric_limits<double>::infinity();
+constexpr double infDist = numeric_limits<double>::infinity();
 
 struct DirectedEdge
 {
@@ -36,46 +36,52 @@ public:
 
 	void PrimMST()
 	{
-		int V = int(adj.size());
+		int numVertices = int(adj.size());
 
-		vector<double> key(V, kInf);     // dist in Sedgewick Algorithm 4.7, key in CLRS p. 596
-		vector<int> pre(V);              // pi in CLRS
+		vector<double> minWeightTable(numVertices, infDist);     // dist in Sedgewick Algorithm 4.7, key in CLRS p. 596
+		vector<int> prevTable(numVertices);              // pi in CLRS
 
-		double cost_sum = 0.0;
+		double sumWeight = 0.0;
 
-		key[0] = 0.0;
-		pre[0] = -1;
+		minWeightTable[0] = 0.0;
+		prevTable[0] = -1;
 
-		IndexMinPQ<double> pq(V);
+		IndexMinPQ<double> pq(numVertices);
 
 		// TODO: 우선순위큐에다가 일단 모든 정점의 인덱스를 넣는다.
 		//       위에서 key[0] = 0.0 이기 때문에 0번이 가장 위로 온다.
+		for (int vertex = 0; vertex < numVertices; ++vertex)
+		{
+			pq.Insert(vertex, minWeightTable[vertex]);
+		}
 
 		while (!pq.Empty())
 		{
 			int u = pq.DelMin();
 
-			if (pre[u] >= 0)
+			if (prevTable[u] >= 0)
 			{
-				cost_sum += key[u];
-				cout << pre[u] << " - " << u << " : " << key[u] << endl;
+				sumWeight += minWeightTable[u];
+				cout << prevTable[u] << " - " << u << " : " << minWeightTable[u] << endl;
 			}
 
-			for (DirectedEdge& e : Adj(u))
+			for (const DirectedEdge& e : Adj(u))
 			{
-				int v = e.v;
-				double weight = e.weight; // u-v 간선 비용
+				const int v = e.v;
+				const double weight = e.weight; // u-v 간선 비용
 
-				// if( TODO: v가 pq안에 아직 있는지 && u-v 비용이 더 적은지)
-				//{
-				//	pre[v] = u;
-				//	key[v] = weight;
-				//	pq.ChangeKey(v, weight);
-				//}
+				// TODO: v가 pq안에 아직 있는지 && u-v 비용이 더 적은지
+				if (pq.Contains(v) && 
+					(weight < pq.keyOf(v)))
+				{
+					prevTable[v] = u;
+					minWeightTable[v] = weight;
+					pq.ChangeKey(v, weight);
+				}
 			}
 		}
 
-		cout << cost_sum << endl;
+		cout << sumWeight << endl;
 	}
 };
 
