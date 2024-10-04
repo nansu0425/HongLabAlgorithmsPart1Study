@@ -9,10 +9,9 @@ struct Activity
 	int end;
 };
 
-bool Compare(struct Activity a, struct Activity b)
+bool Compare(Activity left, Activity right)
 {
-	// TODO:
-	return false;
+	return left.end < right.end;
 }
 
 void Print(vector<Activity>& activities)
@@ -48,7 +47,18 @@ vector<Activity> GreedyActivitySelection(vector<Activity>& activities)
 
 	vector<Activity> schedule;
 
-	// TODO:
+	int lastEnd = 0;
+
+	for (const auto& activity : activities)
+	{
+		if (lastEnd >= activity.start)
+		{
+			continue;
+		}
+
+		schedule.push_back(activity);
+		lastEnd = activity.end;
+	}
 
 	return schedule;
 }
