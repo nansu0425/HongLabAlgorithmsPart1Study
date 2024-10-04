@@ -28,30 +28,42 @@ bool Compare(struct Item a, struct Item b)
 	return ratio_a > ratio_b; // ratio가 큰 쪽이 앞으로 오도록 정렬
 }
 
-double FractionalKnapsack(vector<Item> items, double W)
+double FractionalKnapsack(vector<Item> items, double limitWeight)
 {
 	sort(items.begin(), items.end(), Compare); // Compare() 함수를 이용해서 정렬
 
-	cout << "W = " << W << endl;
+	cout << "limitWeight = " << limitWeight << endl;
 	Print(items);
 
-	double vsum = 0.0;
+	double totalValue = 0.0;
 
-	for (auto& i : items)
+	for (auto& item : items)
 	{
-		// TODO:
+		const double weight = min(limitWeight, item.weight);
+
+		totalValue += item.value / item.weight * weight;
+		item.weight -= weight;
+		limitWeight -= weight;
+
+		cout << "limitWeight = " << limitWeight << endl;
+		Print(items);
+
+		if (limitWeight == 0)
+		{
+			break;
+		}
 	}
 
-	return vsum;
+	return totalValue;
 }
 
 int main()
 {
-	double W = 6.0;
+	double limitWeight = 6.0;
 
 	vector<Item> items = { { 10, 1 }, { 28, 4 }, { 12, 2 }, { 12, 3 } };
 
-	cout << FractionalKnapsack(items, W) << endl;
+	cout << FractionalKnapsack(items, limitWeight) << endl;
 
 	return 0;
 }
