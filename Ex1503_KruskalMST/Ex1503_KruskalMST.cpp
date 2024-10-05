@@ -49,20 +49,25 @@ int main()
 
 	PrintEdges(edges); // 정렬 결과 확인
 
-	double mst_wt = 0.0;
+	double minCost = 0.0;
 
 	UnionFind uf(9);
 
-	for (auto& e : edges)
+	for (const auto& edge : edges)
 	{
-		// TODO:
+		// 같은 그룹이면 mst에 edge를 추가하지 않는다
+		if (uf.Find(edge.u) == uf.Find(edge.v))
+		{
+			continue;
+		}
 
-		mst_wt += e.weight;
+		minCost += edge.weight;
+		uf.Union(edge.u, edge.v);
 
-		cout << e.u << " - " << e.v << " : " << e.weight << endl;
+		cout << edge.u << " - " << edge.v << " : " << edge.weight << endl;
 	}
 
-	cout << mst_wt << endl;
+	cout << minCost << endl;
 
 	return 0;
 }
