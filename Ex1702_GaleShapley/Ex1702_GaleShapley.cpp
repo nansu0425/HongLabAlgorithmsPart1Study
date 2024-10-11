@@ -10,14 +10,19 @@ using namespace std;
 
 struct Vertex
 {
-	string name = "";
-	vector<string> priority; // 선호도 우선순위
-	int current = -1; // 현재 자신의 몇 "순위"와 연결되어 있는지 기록
+	string			name = "";
+	vector<string>	priority; // 선호도 우선순위
+	int				matchedRank = -1; // 현재 자신의 몇 "순위"와 연결되어 있는지 기록
 
-	int Rank(string name)
+	int GetRank(string name)
 	{
-		for (int i = 0; i < priority.size(); i++)
-			if (priority[i] == name) return i;
+		for (int rank = 0; rank < priority.size(); rank++)
+		{
+			if (priority[rank] == name) 
+			{
+				return rank;
+			}
+		}
 
 		assert(false);
 
@@ -27,10 +32,14 @@ struct Vertex
 		// unordered_map<이름, 우선순위>를 만들어서 더 빠르게 확인 가능
 	}
 
-	string ConnectedName()
+	string GetMatchedName()
 	{
-		if (current == -1) return "NA";
-		else return priority[current];
+		if (matchedRank == -1) 
+		{
+			return "NA";
+		}
+		
+		return priority[matchedRank];	
 	}
 
 	void Print()
@@ -48,11 +57,11 @@ void Print(map<string, Vertex>& interns, unordered_map<string, Vertex>& teams)
 	{
 		i.second.Print();
 		cout << " - ";
-		if (i.second.current == -1)
+		if (i.second.matchedRank == -1)
 			cout << "No Team";
 		else {
-			teams[i.second.ConnectedName()].Print();
-			if (i.second.name != teams[i.second.ConnectedName()].ConnectedName())
+			teams[i.second.GetMatchedName()].Print();
+			if (i.second.name != teams[i.second.GetMatchedName()].GetMatchedName())
 				cout << "*"; // 서로 연결이 아니라면 임시라는 의미로 * 추가
 		}
 		cout << endl;
@@ -74,36 +83,42 @@ int main()
 	//teams["Y"] = Vertex{ "Y", {"A", "C", "B"} };
 	//teams["Z"] = Vertex{ "Z", {"B", "C", "A"} };
 
-	queue<Vertex*> free_interns;
-	for (auto& i : interns)
-		free_interns.push(&i.second); // 모든 인턴을 free 큐에 넣기
+	queue<Vertex*> ptrsUnmatchedIntern;
 
-	while (!free_interns.empty())
+	for (auto& intern : interns)
 	{
-		Vertex* i = free_interns.front();
-		free_interns.pop();
+		ptrsUnmatchedIntern.push(&intern.second); // 모든 인턴을 free 큐에 넣기
+	}
 
-		cout << "Intern " << i->name << endl;
+	while (ptrsUnmatchedIntern.empty() == false)
+	{
+		Vertex* ptrUnmatchedIntern = ptrsUnmatchedIntern.front();
+		ptrsUnmatchedIntern.pop();
 
-		// i->current += 1;
+		cout << "Intern " << ptrUnmatchedIntern->name << endl;
+		
+		// 인턴이 가장 선호하는 팀과 매치
+		ptrUnmatchedIntern->matchedRank += 1;
+		Vertex* ptrPreferedTeam = &teams[ptrUnmatchedIntern->GetMatchedName()];
 
-		// Vertex* t = &teams[i->ConnectedName()];
-
-		//if (t->current == -1)
-		//{
-		//	t->current = TODO;
-		//}
-		//else
-		//{
-		//	if ( TODO )
-		//	{
-		//		free_interns.push(&interns[t->ConnectedName()]);
-		//		t->current = t->Rank(i->name);
-		//	}
-		//	else {
-		//		free_interns.push(i);
-		//	}
-		//}
+		// 팀에 매칭된 인턴이 없었던 경우
+		if (ptrPreferedTeam->matchedRank == -1)
+		{
+			ptrPreferedTeam->matchedRank = ptrPreferedTeam->GetRank(ptrUnmatchedIntern->name);
+		}
+		// 팀에 이미 매칭된 팀이 있는 경우 팀의 우선순위에 따라 인턴 한 명 선택
+		else
+		{
+			if (ptrPreferedTeam->GetRank(ptrUnmatchedIntern->name) < ptrPreferedTeam->matchedRank)
+			{
+				ptrsUnmatchedIntern.push(&interns[ptrPreferedTeam->GetMatchedName()]);
+				ptrPreferedTeam->matchedRank = ptrPreferedTeam->GetRank(ptrUnmatchedIntern->name);
+			}
+			else
+			{
+				ptrsUnmatchedIntern.push(ptrUnmatchedIntern);
+			}
+		}
 
 		Print(interns, teams);
 	}
