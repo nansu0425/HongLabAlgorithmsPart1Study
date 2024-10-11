@@ -12,40 +12,46 @@ void Print(vector<int>& colors)
 	cout << endl;
 }
 
-bool IsBipartite(vector<vector<int>>& graph)
+bool IsBipartite(const vector<vector<int>>& graph)
 {
-	int V = int(graph.size());
-	vector<int> colors(V, -1);
+	int numVertices = int(graph.size());
+	vector<int> colorTable(numVertices, -1);
 
-	colors[0] = 0;
+	colorTable[0] = 0;
 
-	queue <int> q;
-	q.push(0);
+	queue<int> coloredVertices;
+	coloredVertices.push(0);
 
-	while (!q.empty())
+	while (!coloredVertices.empty())
 	{
-		int u = q.front();
-		q.pop();
+		int visitedVertex = coloredVertices.front();
+		coloredVertices.pop();
 
-		assert(graph[u][u] == 0);
+		assert(graph[visitedVertex][visitedVertex] == 0);
 
-		for (int v = 0; v < V; ++v)
+		for (int neighborVertex = 0; neighborVertex < numVertices; ++neighborVertex)
 		{
-			Print(colors);
+			Print(colorTable);
 
-			if (graph[u][v] && colors[v] == -1)
+			// 이웃 정점이 아니면 다음 정점으로 넘어간다
+			if (graph[visitedVertex][neighborVertex] == 0)
 			{
-				colors[v] = 1 - colors[u]; // color는 0 또는 1, 이웃은 다른 색으로 설정
-				q.push(v);
+				continue;
 			}
-			//else if ( TODO )
-			//{
-			//	cout << u << " " << v << endl;
-			//	return false;
-			//}
+
+			if (colorTable[neighborVertex] == -1)
+			{
+				colorTable[neighborVertex] = 1 - colorTable[visitedVertex]; // color는 0 또는 1, 이웃은 다른 색으로 설정
+				coloredVertices.push(neighborVertex);
+			}
+			else if (colorTable[visitedVertex] == colorTable[neighborVertex])
+			{
+				cout << visitedVertex << " " << neighborVertex << endl;
+				return false;
+			}
 		}
 
-		Print(colors);
+		Print(colorTable);
 	}
 
 	return true;
