@@ -5,72 +5,138 @@ using namespace std;
 
 struct Edge
 {
-	int u = 0;
-	int v = 0;
+	int from = 0;
+	int to = 0;
 	int weight = 0;
 };
 
 struct Vertex
 {
-	Vertex(int v) { value = v; }
-
 	int value = -1;// 변수 이름은 value지만 실질적으로는 배열에 이 정점이 저장된 인덱스입니다.
-	bool visited = false;
+	bool isVisited = false;
+	vector<Edge> outNeighbors; // 나가는 방향의 이웃 vertex들에 대한 포인터
 
-	vector<Edge> out_neighbors; // 나가는 방향의 이웃 vertex들에 대한 포인터
+	Vertex(int val)
+		: value(val)
+	{}
 };
 
 class Graph
 {
 public:
-	Graph(int num_vertices)
+	Graph(int numVertices)
 	{
-		vertices.resize(num_vertices);
-		for (int i = 0; i < num_vertices; i++)
-			vertices[i] = new Vertex(i);
+		m_vertexTable.resize(numVertices);
+
+		for (int key = 0; key < numVertices; key++)
+		{
+			m_vertexTable[key] = new Vertex(key);
+		}
 	}
 
 	~Graph()
 	{
-		for (auto* v : vertices)
-			delete v;
+		for (Vertex* pVertex : m_vertexTable)
+		{
+			delete pVertex;
+		}
 	}
 
-	void AddDiEdge(int u, int v, int weight) // 단방향 간선
+	void AddDiEdge(int key, int outNeighborKey, int weight) // 단방향 간선
 	{
-		vertices[u]->out_neighbors.push_back(Edge{ u, v, weight });
+		m_vertexTable[key]->outNeighbors.push_back(Edge{ key, outNeighborKey, weight });
 	}
 
-	void AddBiEdge(int u, int v, int weight) // 양방향 간선
+	void AddBiEdge(int key, int neighborKey, int weight) // 양방향 간선
 	{
-		vertices[u]->out_neighbors.push_back(Edge{ u, v, weight });
-		vertices[v]->out_neighbors.push_back(Edge{ v, u, weight });
+		AddDiEdge(key, neighborKey, weight);
+		AddDiEdge(neighborKey, key, weight);
 	}
 
-	void TravellingSalesman(int source)
+	void TravellingSalesman(int sourceKey)
 	{
-		cout << "Start : " << vertices[source]->value << endl;
+		cout << "Start : " << m_vertexTable[sourceKey]->value << endl;
 
-		minimum_path.clear();
+		m_minCostPath.clear();
 
-		for (auto* v : this->vertices)
-			v->visited = false;
+		for (Vertex* pVertex : m_vertexTable)
+		{
+			pVertex->isVisited = false;
+		}
 
-		TravellingSalesmanHelper(vertices[source], vertices[source], vector<Vertex*>(), 0);
+		vector<Vertex*> path;
+		path.reserve(m_vertexTable.size());
 
-		cout << "Minimum cost : " << min_wsum << endl;
+		TravellingSalesmanHelper(m_vertexTable[sourceKey], m_vertexTable[sourceKey], path, 0);
+
+		cout << "Minimum cost : " << m_minCost << endl;
 		cout << "Minimum path : ";
-		PrintPath(minimum_path);
+		PrintPath(m_minCostPath);
 	}
 
 private:
-	vector<Vertex*> vertices;
-	vector<Vertex*> minimum_path;
-	int min_wsum = 1000000; // large number
+	vector<Vertex*>		m_vertexTable;
+	vector<Vertex*>		m_minCostPath;
+	int					m_minCost = numeric_limits<int>::max(); // large number
 
-	void TravellingSalesmanHelper(Vertex* source, Vertex* sink, vector<Vertex*> path, int wsum)
+	void TravellingSalesmanHelper(Vertex* pSource, Vertex* pSink, vector<Vertex*>& path, int cost)
 	{
-		// TODO:
+		// 경로 기록
+		path.push_back(pSource);
+
+		// 시작 정점으로 돌아온 경우
+		if ((path.size() > 1) && 
+			(pSource == pSink))
+		{
+			// 모든 정점을 방문하지 않은 경우 (해밀턴 순회가 아닌 경우)
+			if (path.size() <= m_vertexTable.size())
+			{
+				cout << "Discard: ";
+				PrintPath(path);
+			}
+			else
+			{
+				cout << "Found: ";
+				PrintPath(path);
+				cout << cost << endl;
+
+				// cost가 최소인 경우
+				if (cost < m_minCost)
+				{
+					m_minCost = cost;
+					m_minCostPath = path;
+				}
+			}
+
+			path.pop_back();
+
+			return;
+		}
+
+		// 시작점이 아니면 방문 처리
+		if (pSource != pSink)
+		{
+			pSource->isVisited = true;
+		}
+
+		// 이웃 정점 탐색
+		for (Edge& outNeighbor : pSource->outNeighbors)
+		{
+			// 이미 방문한 정점이면 다른 정점 탐색
+			if (m_vertexTable[outNeighbor.to]->isVisited == true)
+			{
+				continue;
+			}
+
+			TravellingSalesmanHelper(m_vertexTable[outNeighbor.to], 
+									 pSink, 
+									 path, 
+									 cost + outNeighbor.weight);
+		}
+
+		// 다른 경로 탐색을 위한 방문, 경로 기록 삭제
+		pSource->isVisited = false;
+		path.pop_back();
 	}
 
 	void PrintPath(vector<Vertex*> path)
