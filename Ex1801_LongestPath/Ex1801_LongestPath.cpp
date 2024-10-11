@@ -5,82 +5,131 @@ using namespace std;
 
 struct Vertex
 {
-	Vertex(int v) { value = v; }
+	int					value = -1;// 변수 이름은 value지만 실질적으로는 배열에 이 정점이 저장된 인덱스입니다.
+	bool				isVisited = false;
+	vector<Vertex*>		ptrsOutNeighbor; // 나가는 방향의 이웃 vertex들에 대한 포인터
 
-	int value = -1;// 변수 이름은 value지만 실질적으로는 배열에 이 정점이 저장된 인덱스입니다.
-	bool visited = false;
-
-	vector<Vertex*> out_neighbors; // 나가는 방향의 이웃 vertex들에 대한 포인터
+	Vertex(int val)
+		: value(val)
+	{}
 };
 
 class Graph
 {
 public:
-	Graph(int num_vertices)
+	Graph(int numVertices)
 	{
-		vertices.resize(num_vertices);
-		for (int i = 0; i < num_vertices; i++)
-			vertices[i] = new Vertex(i);
+		m_ptrVertexTable.resize(numVertices);
+
+		for (int key = 0; key < numVertices; key++)
+		{
+			m_ptrVertexTable[key] = new Vertex(key);
+		}
 	}
 
 	~Graph()
 	{
-		for (auto* v : vertices)
-			delete v;
+		for (auto* ptrVertex : m_ptrVertexTable)
+		{
+			delete ptrVertex;
+		}
 	}
 
-	void AddDiEdge(int v, int w) // 단방향 간선
+	void AddDiEdge(int key, int outNeighborKey) // 단방향 간선
 	{
-		vertices[v]->out_neighbors.push_back(vertices[w]);
+		m_ptrVertexTable[key]->ptrsOutNeighbor.push_back(m_ptrVertexTable[outNeighborKey]);
 	}
 
-	void AddBiEdge(int v, int w) // 양방향 간선
+	void AddBiEdge(int key, int neighborKey) // 양방향 간선
 	{
-		vertices[v]->out_neighbors.push_back(vertices[w]);
-		vertices[w]->out_neighbors.push_back(vertices[v]);
+		AddDiEdge(key, neighborKey);
+		AddDiEdge(neighborKey, key);
 	}
 
 	void DFS(int source)
 	{
 		cout << "Depth-first Search: ";
-		for (auto* v : this->vertices)
-			v->visited = false;
-		DFS(vertices[source]);
+		for (auto* v : this->m_ptrVertexTable)
+			v->isVisited = false;
+		DFS(m_ptrVertexTable[source]);
 		cout << endl;
 	}
 
 	void DFS(Vertex* source)
 	{
 		cout << source->value << " ";
-		source->visited = true;
-		for (auto* w : source->out_neighbors)
-			if (!w->visited)
+		source->isVisited = true;
+		for (auto* w : source->ptrsOutNeighbor)
+			if (!w->isVisited)
 				DFS(w);
 	}
 
-	void DepthFirstPath(int source, int sink)
+	void DepthFirstPath(int sourceKey, int sinkKey)
 	{
-		cout << "Paths from " << vertices[source]->value << " to " << vertices[sink]->value << endl;
+		cout << "Paths from " << m_ptrVertexTable[sourceKey]->value << " to " << m_ptrVertexTable[sinkKey]->value << endl;
 
-		longest_path.clear();
+		m_longestPath.clear();
 
-		for (auto* v : this->vertices)
-			v->visited = false;
+		for (auto* ptrVertex : m_ptrVertexTable)
+		{
+			ptrVertex->isVisited = false;
+		}
 
-		DepthFirstPathHelper(vertices[source], vertices[sink], vector<Vertex*>());
+		vector<Vertex*> path;
+		path.reserve(m_ptrVertexTable.size());
 
-		cout << "Longest length : " << int(longest_path.size() - 1) << endl;
+		DepthFirstPathHelper(m_ptrVertexTable[sourceKey], m_ptrVertexTable[sinkKey], path);
+
+		cout << "Longest length : " << int(m_longestPath.size() - 1) << endl;
 		cout << "Longest path : ";
-		PrintPath(longest_path);
+		PrintPath(m_longestPath);
 	}
 
 private:
-	vector<Vertex*> vertices;
-	vector<Vertex*> longest_path;
+	vector<Vertex*> m_ptrVertexTable; // key to pointer to vertex
+	vector<Vertex*> m_longestPath;
 
-	void DepthFirstPathHelper(Vertex* source, Vertex* sink, vector<Vertex*> path)
+	void DepthFirstPathHelper(Vertex* ptrSource, Vertex* ptrSink, vector<Vertex*>& path)
 	{
-		// TODO:
+		path.push_back(ptrSource);
+
+		// 목적지에 도달한 경우
+		if (ptrSource == ptrSink)
+		{
+			cout << "Found: ";
+			PrintPath(path);
+
+			// path가 현재 가장 긴 경로인 경우
+			if (m_longestPath.size() < path.size())
+			{
+				m_longestPath = path;
+			}
+
+			path.pop_back();
+
+			return;
+		}
+
+		// 방문 처리, 경로 기록
+		ptrSource->isVisited = true;
+
+		PrintPath(path);
+
+		// 이웃 정점 탐색
+		for (Vertex* ptrOutNeighbor : ptrSource->ptrsOutNeighbor)
+		{
+			// 방문한 정점이면 다른 이웃 탐색
+			if (ptrOutNeighbor->isVisited == true)
+			{
+				continue;
+			}
+
+			DepthFirstPathHelper(ptrOutNeighbor, ptrSink, path);
+		}
+
+		// 방문 기록 및 경로 제거
+		ptrSource->isVisited = false;
+		path.pop_back();
 	}
 
 	void PrintPath(vector<Vertex*> path)
